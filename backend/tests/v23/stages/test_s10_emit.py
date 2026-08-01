@@ -5,6 +5,7 @@ per-impression PNGs + manifest.json (v23.0 schema) + recipe.md into a
 single ZIP. Per addendum-v3 fix 6: NEVER claim "recovered underlayers";
 the manifest carries the "plausible underprint candidates" posture verbatim.
 """
+
 from __future__ import annotations
 
 import io
@@ -22,6 +23,7 @@ def _isolate(monkeypatch, tmp_path: Path) -> None:
     import importlib
 
     from backend.mcp import paths
+
     importlib.reload(paths)
 
 

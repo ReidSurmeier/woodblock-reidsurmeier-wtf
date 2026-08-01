@@ -12,6 +12,7 @@ State encoding (uint8 for cheap on-disk persistence):
 Thresholds per interface contract B-5 — kept simple for day-1; D11.b
 will let calibration tune them.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -107,6 +108,10 @@ def summarise_states(
 
 
 __all__ = [
-    "STATE_NONE", "STATE_VISIBLE", "STATE_COVERED", "STATE_SUPPORT",
-    "classify_three_state", "summarise_states",
+    "STATE_NONE",
+    "STATE_VISIBLE",
+    "STATE_COVERED",
+    "STATE_SUPPORT",
+    "classify_three_state",
+    "summarise_states",
 ]

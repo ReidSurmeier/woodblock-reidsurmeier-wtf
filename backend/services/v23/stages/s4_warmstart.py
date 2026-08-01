@@ -9,6 +9,7 @@ as a warm-start so L-BFGS doesn't begin from random noise.
 Per interface contract W-2: vertices that snap to the same Mixbox
 pigment have their barycentric weights aggregated, NOT duplicated.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -25,7 +26,7 @@ class WarmStartResult:
     """Output of :func:`tan_to_pigment_warmstart`. Pure numpy, no I/O."""
 
     alpha_stack: NDArray[np.float32]  # (M, H, W), barycentric weights per Mixbox pigment
-    pigment_idx: tuple[int, ...]      # length M, each ∈ [0, 12]
+    pigment_idx: tuple[int, ...]  # length M, each ∈ [0, 12]
     palette_rgb: NDArray[np.float32]  # (M, 3) snapped pigment RGB anchors
 
 

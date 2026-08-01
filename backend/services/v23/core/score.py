@@ -15,6 +15,7 @@ The components are NOT physical proofs of correctness — they're
 weighted heuristics. The "notes" string surfaces the weakest component
 so Opus can name it directly to the artist.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -98,11 +99,11 @@ def _template_fit(plan: _orch.PartialPlan) -> float:
     expected_families = [slot.family for slot in template.slots]
 
     from backend.services.v23.core import forward_render_jax
+
     pigment_to_family = _pigment_family_map(forward_render_jax.PIGMENT_RGB_255)
 
     actual_families = [
-        pigment_to_family.get(imp["pigment_id"], "accent")
-        for imp in plan.impressions
+        pigment_to_family.get(imp["pigment_id"], "accent") for imp in plan.impressions
     ]
     if not actual_families:
         return 0.0
@@ -117,19 +118,19 @@ def _pigment_family_map(pigment_rgb_255) -> dict[int, str]:
     """Coarse pigment → family lookup for the 13-catalog."""
     # Hand-mapping aligned with the catalog + family taxonomy
     return {
-        0: "warm",    # cadmium_yellow
-        1: "warm",    # hansa_yellow
-        2: "warm",    # cadmium_orange
-        3: "warm",    # cadmium_red
+        0: "warm",  # cadmium_yellow
+        1: "warm",  # hansa_yellow
+        2: "warm",  # cadmium_orange
+        3: "warm",  # cadmium_red
         4: "accent",  # quinacridone_magenta
         5: "accent",  # cobalt_violet
-        6: "cool",    # ultramarine_blue
-        7: "cool",    # cobalt_blue
+        6: "cool",  # ultramarine_blue
+        7: "cool",  # cobalt_blue
         8: "shadow",  # viridian_green
         9: "shadow",  # forest_green
-        10: "warm",   # burnt_sienna
-        11: "shadow", # raw_umber
-        12: "detail", # ivory_black
+        10: "warm",  # burnt_sienna
+        11: "shadow",  # raw_umber
+        12: "detail",  # ivory_black
     }
 
 

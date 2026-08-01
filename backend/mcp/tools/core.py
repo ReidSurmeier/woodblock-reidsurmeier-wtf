@@ -7,6 +7,7 @@ Per addendum-v4 WB-LANG-02: every t1_mixbox recipe carries the
 "as if pre-mixed" qualifier so artists never confuse Mixbox prediction
 with overprint physics.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -50,7 +51,7 @@ def _impl_pending(code: str, hint: str) -> WoodblockError:
 
 def _render_de_heatmap(plan: _orch.PartialPlan, plan_dir: Path) -> Path | None:
     """Per-pixel ΔE76 heatmap PNG (viridis-style ramp). Saves under plan_dir."""
-    if (plan.alpha_stack_path is None or not Path(plan.alpha_stack_path).is_file()):
+    if plan.alpha_stack_path is None or not Path(plan.alpha_stack_path).is_file():
         return None
     target_path = Path(plan.alpha_stack_path).parent / "target.npy"
     if not target_path.is_file():
@@ -65,10 +66,12 @@ def _render_de_heatmap(plan: _orch.PartialPlan, plan_dir: Path) -> Path | None:
     alpha_stack = np.load(plan.alpha_stack_path)  # (M, H, W)
     target = np.load(target_path)
     alpha_hwm = np.transpose(alpha_stack, (1, 2, 0))
-    rendered = np.asarray(forward_render_jax.forward_render(
-        jnp.asarray(alpha_hwm, dtype=jnp.float32),
-        jnp.asarray(plan.pigment_idx, dtype=jnp.int32),
-    ))
+    rendered = np.asarray(
+        forward_render_jax.forward_render(
+            jnp.asarray(alpha_hwm, dtype=jnp.float32),
+            jnp.asarray(plan.pigment_idx, dtype=jnp.int32),
+        )
+    )
     dE = color.rgb_delta_e76(rendered, target)  # (H, W) in ΔE76 units
     # Normalise to [0, 1] with a 0..15 ΔE range (anything > 15 saturates red)
     norm = np.clip(dE / 15.0, 0.0, 1.0)
@@ -101,6 +104,7 @@ def _render_quad_grid(plan: _orch.PartialPlan, plan_dir: Path) -> Path | None:
     composite = np.asarray(s10_emit._render_composite(plan))
     # Decode composite PNG bytes back to array via PIL
     import io
+
     target_u8 = (np.clip(target, 0.0, 1.0) * 255.0).astype(np.uint8)
     composite_img = Image.open(io.BytesIO(composite)).convert("RGB")
     composite_u8 = np.array(composite_img, dtype=np.uint8)
@@ -108,10 +112,12 @@ def _render_quad_grid(plan: _orch.PartialPlan, plan_dir: Path) -> Path | None:
     # Heatmap (reuses _render_de_heatmap logic inline)
     alpha_stack = np.load(plan.alpha_stack_path)
     alpha_hwm = np.transpose(alpha_stack, (1, 2, 0))
-    rendered = np.asarray(forward_render_jax.forward_render(
-        jnp.asarray(alpha_hwm, dtype=jnp.float32),
-        jnp.asarray(plan.pigment_idx, dtype=jnp.int32),
-    ))
+    rendered = np.asarray(
+        forward_render_jax.forward_render(
+            jnp.asarray(alpha_hwm, dtype=jnp.float32),
+            jnp.asarray(plan.pigment_idx, dtype=jnp.int32),
+        )
+    )
     dE = color.rgb_delta_e76(rendered, target)
     norm = np.clip(dE / 15.0, 0.0, 1.0)
     r = np.clip(2 * norm - 0.5, 0.0, 1.0)
@@ -312,10 +318,13 @@ def inspect_plan(
         return ToolResult(
             ok=True,
             data={"plan_id": plan_id, "focus": focus, "artifact_path": None},
-            errors=[exc.error, _impl_pending(
-                "IMPL_PENDING_INSPECT",
-                "plan_id not found — placeholder returned. Run propose_stack first.",
-            )],
+            errors=[
+                exc.error,
+                _impl_pending(
+                    "IMPL_PENDING_INSPECT",
+                    "plan_id not found — placeholder returned. Run propose_stack first.",
+                ),
+            ],
         )
 
     from backend.services.v23.stages import s10_emit
@@ -362,7 +371,8 @@ def inspect_plan(
         return ToolResult(
             ok=True,
             data={
-                "plan_id": plan_id, "focus": focus,
+                "plan_id": plan_id,
+                "focus": focus,
                 "dE_mean": plan.reconstruction_dE_mean,
                 "dE_p95": plan.reconstruction_dE_p95,
                 "artifact_path": str(heatmap_path) if heatmap_path else None,
@@ -374,20 +384,23 @@ def inspect_plan(
         return ToolResult(
             ok=True,
             data={
-                "plan_id": plan_id, "focus": focus,
+                "plan_id": plan_id,
+                "focus": focus,
                 "artifact_path": str(quad_path) if quad_path else None,
             },
         )
     return ToolResult(
         ok=False,
         data=None,
-        errors=[WoodblockError(
-            tier="refusal",
-            code="PIXEL_FOCUS_REQUIRES_COORDS",
-            message="inspect_plan focus='pixel' needs coordinates",
-            hint="use dE_at(plan_id, x, y) or pigment_at(plan_id, x, y)",
-            recoverable=True,
-        )],
+        errors=[
+            WoodblockError(
+                tier="refusal",
+                code="PIXEL_FOCUS_REQUIRES_COORDS",
+                message="inspect_plan focus='pixel' needs coordinates",
+                hint="use dE_at(plan_id, x, y) or pigment_at(plan_id, x, y)",
+                recoverable=True,
+            )
+        ],
     )
 
 
@@ -406,10 +419,13 @@ def forward_render(plan_id: str) -> ToolResult[dict[str, Any]]:
         return ToolResult(
             ok=True,
             data={"plan_id": plan_id, "composite_path": None, "dE_map_path": None},
-            errors=[exc.error, _impl_pending(
-                "IMPL_PENDING_FORWARD",
-                "plan_id not found — run propose_stack first",
-            )],
+            errors=[
+                exc.error,
+                _impl_pending(
+                    "IMPL_PENDING_FORWARD",
+                    "plan_id not found — run propose_stack first",
+                ),
+            ],
         )
     plan_dir = _orch._plan_dir(plan.session_id, plan.plan_id)
     composite_path = plan_dir / "composite_preview.png"
@@ -449,10 +465,13 @@ def score_stack_delta_e(plan_id: str, region: dict | None = None) -> ToolResult[
         return ToolResult(
             ok=True,
             data={"plan_id": plan_id, "dE_mean": 0.0, "dE_p95": 0.0, "region": region},
-            errors=[exc.error, _impl_pending(
-                "IMPL_PENDING_DE_LOOKUP",
-                "plan_id not found — returning neutral value. Run propose_stack first.",
-            )],
+            errors=[
+                exc.error,
+                _impl_pending(
+                    "IMPL_PENDING_DE_LOOKUP",
+                    "plan_id not found — returning neutral value. Run propose_stack first.",
+                ),
+            ],
         )
     return ToolResult(
         ok=True,
@@ -481,14 +500,21 @@ def score_candidate_stack(plan_id: str) -> ToolResult[dict[str, Any]]:
         plan = _orch.load_plan(plan_id)
     except _orch.OrchestratorError:
         # Unknown plan — fall back to neutral 0.5 for backwards-compat.
-        weights = {"visual_match": 0.40, "carveability": 0.20, "simplicity": 0.15,
-                   "underprint_utility": 0.15, "template_fit": 0.10}
+        weights = {
+            "visual_match": 0.40,
+            "carveability": 0.20,
+            "simplicity": 0.15,
+            "underprint_utility": 0.15,
+            "template_fit": 0.10,
+        }
         components = {k: 0.5 for k in weights}
         overall = sum(weights[k] * components[k] for k in weights)
         return ToolResult(
             ok=True,
             data={
-                "plan_id": plan_id, "overall": overall, **components,
+                "plan_id": plan_id,
+                "overall": overall,
+                **components,
                 "component_weights": weights,
                 "notes": "Plan not found — returned neutral scores. Run propose_stack first.",
             },
@@ -546,6 +572,7 @@ def generate_print_recipe_report(
     format: str = "markdown",
 ) -> ToolResult[dict[str, Any]]:
     from backend.services.v23.stages import s10_emit
+
     try:
         plan = _orch.load_plan(plan_id)
         md = s10_emit._build_recipe_md(plan)

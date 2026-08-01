@@ -8,6 +8,7 @@ Two tests per corpus fixture:
    ``corpus/baseline-<utc>.json``. xfails on Tier-1 gate miss until GPU
    JAX + spectral tier ship the ΔE budget.
 """
+
 from __future__ import annotations
 
 import json
@@ -15,7 +16,6 @@ import os
 import time
 from pathlib import Path
 
-import numpy as np
 import pytest
 from PIL import Image
 
@@ -48,21 +48,24 @@ def _resize_for_corpus_run(src_path: Path, dst_dir: Path, long_edge: int) -> Pat
     not os.environ.get(CORPUS_RUN_FLAG),
     reason=f"set {CORPUS_RUN_FLAG}=1 to run full corpus regression (slow on CPU JAX)",
 )
-@pytest.mark.xfail(
-    reason="ΔE gates not yet hit on CPU JAX t1_mixbox; awaits GPU + spectral tier"
-)
+@pytest.mark.xfail(reason="ΔE gates not yet hit on CPU JAX t1_mixbox; awaits GPU + spectral tier")
 def test_corpus_baseline_run(corpus_fixture: CorpusFixture, tmp_path, monkeypatch) -> None:
     monkeypatch.delenv("WOODBLOCK_DISABLE_SOLVER", raising=False)
     monkeypatch.setenv("WOODBLOCK_DISABLE_SAM", "1")
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
     import importlib
+
     from backend.mcp import paths
+
     importlib.reload(paths)
     from backend.services.v23 import session as _sess
+
     importlib.reload(_sess)
     from backend.services.v23 import orchestrator as _orch
+
     importlib.reload(_orch)
     from backend.mcp.tools import core as _core
+
     importlib.reload(_core)
 
     src_image = next(corpus_fixture.path.glob("original.*"))
@@ -77,7 +80,11 @@ def test_corpus_baseline_run(corpus_fixture: CorpusFixture, tmp_path, monkeypatc
     de_p95 = r.data["reconstruction_dE_p95"]
 
     # Append to a baseline log under repo corpus/ — survives test
-    log_path = Path(__file__).resolve().parents[4] / "corpus" / f"baseline-{time.strftime('%Y-%m-%d')}.json"
+    log_path = (
+        Path(__file__).resolve().parents[4]
+        / "corpus"
+        / f"baseline-{time.strftime('%Y-%m-%d')}.json"
+    )
     log_path.parent.mkdir(parents=True, exist_ok=True)
     record = {
         "fixture_id": corpus_fixture.id,

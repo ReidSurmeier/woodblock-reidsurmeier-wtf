@@ -4,6 +4,7 @@
 stubbed with NotImplementedError for MVP-A — those tests confirm the stub contract
 without exercising the unimplemented math.
 """
+
 from __future__ import annotations
 
 import numpy as np

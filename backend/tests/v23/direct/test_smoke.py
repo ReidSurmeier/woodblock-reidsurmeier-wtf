@@ -6,6 +6,7 @@ Golden-path tool surface:
   simplify_masks_for_carving, score_candidate_stack,
   generate_print_recipe_report, export_print_plan.
 """
+
 from __future__ import annotations
 
 import importlib

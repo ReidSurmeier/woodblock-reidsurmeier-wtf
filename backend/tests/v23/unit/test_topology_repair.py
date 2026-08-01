@@ -9,12 +9,28 @@ are NOT in the optimizer loss. They run POST-SOLVE here:
 
 Returns the repaired alpha_stack + diagnostics.
 """
+
 from __future__ import annotations
+
+import warnings
 
 import numpy as np
 import pytest
 
 pytest.importorskip("skimage")
+
+
+def test_repair_uses_current_skimage_api() -> None:
+    from backend.services.v23.core.topology_repair import morph_repair_stack
+
+    alpha = np.zeros((1, 8, 8), dtype=np.float32)
+    alpha[0, 2:6, 2:6] = 0.8
+    with warnings.catch_warnings(record=True) as warning_records:
+        warnings.simplefilter("always")
+        repaired = morph_repair_stack(alpha, min_island_px=4, close_radius=1)
+
+    assert repaired[0, 3, 3] > 0.5
+    assert not [warning for warning in warning_records if warning.category is FutureWarning]
 
 
 def test_topology_score_counts_tiny_islands() -> None:

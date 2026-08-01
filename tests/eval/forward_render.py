@@ -12,6 +12,7 @@ real K-M layered composition.
 
 Reference: validation-system-v1.md sections 2 + 10.
 """
+
 from __future__ import annotations
 
 from typing import Literal
@@ -62,8 +63,7 @@ def forward_render_km(
     """
     if len(per_pigment_masks) != len(palette_rgb):
         raise ValueError(
-            f"mask/palette mismatch: "
-            f"{len(per_pigment_masks)} masks vs {len(palette_rgb)} colors"
+            f"mask/palette mismatch: {len(per_pigment_masks)} masks vs {len(palette_rgb)} colors"
         )
 
     if not per_pigment_masks:

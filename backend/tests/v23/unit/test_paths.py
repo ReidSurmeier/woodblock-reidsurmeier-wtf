@@ -1,4 +1,5 @@
 """D3.2 RED — WB_DATA_DIR + session_dir / plan_dir path resolver."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -8,10 +9,11 @@ import pytest
 
 def test_data_dir_defaults_under_home(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv("WOODBLOCK_HOME", raising=False)
-    from backend.mcp import paths
-
     # Reload to pick up env state
     import importlib
+
+    from backend.mcp import paths
+
     importlib.reload(paths)
 
     assert paths.WB_DATA_DIR.name == "v23"
@@ -20,8 +22,9 @@ def test_data_dir_defaults_under_home(tmp_path: Path, monkeypatch) -> None:
 
 def test_data_dir_respects_env(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path / "wb"))
-    from backend.mcp import paths
     import importlib
+
+    from backend.mcp import paths
 
     importlib.reload(paths)
     assert paths.WB_DATA_DIR == (tmp_path / "wb" / "v23").resolve()
@@ -29,8 +32,9 @@ def test_data_dir_respects_env(tmp_path: Path, monkeypatch) -> None:
 
 def test_session_dir_resolves_under_data_dir(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
-    from backend.mcp import paths
     import importlib
+
+    from backend.mcp import paths
 
     importlib.reload(paths)
     sid = "01HABC0000000000000000000A"
@@ -42,8 +46,9 @@ def test_session_dir_resolves_under_data_dir(tmp_path: Path, monkeypatch) -> Non
 
 def test_plan_dir_under_session(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
-    from backend.mcp import paths
     import importlib
+
+    from backend.mcp import paths
 
     importlib.reload(paths)
     sid = "01HABC0000000000000000000A"
@@ -56,8 +61,9 @@ def test_plan_dir_under_session(tmp_path: Path, monkeypatch) -> None:
 
 def test_session_dir_rejects_path_traversal(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
-    from backend.mcp import paths
     import importlib
+
+    from backend.mcp import paths
 
     importlib.reload(paths)
     with pytest.raises(ValueError):
@@ -68,8 +74,9 @@ def test_session_dir_rejects_path_traversal(tmp_path: Path, monkeypatch) -> None
 
 def test_plan_dir_rejects_path_traversal(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
-    from backend.mcp import paths
     import importlib
+
+    from backend.mcp import paths
 
     importlib.reload(paths)
     with pytest.raises(ValueError):

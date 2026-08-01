@@ -1,4 +1,5 @@
 """Ring 2 — JSON-RPC ``tools/list`` / ``tools/call`` over stdio."""
+
 from __future__ import annotations
 
 import json
@@ -8,11 +9,14 @@ from PIL import Image
 
 
 def test_server_responds_to_initialize(mcp_stdio_client) -> None:
-    response = mcp_stdio_client.call("initialize", {
-        "protocolVersion": "2024-11-05",
-        "capabilities": {},
-        "clientInfo": {"name": "pytest", "version": "0"},
-    })
+    response = mcp_stdio_client.call(
+        "initialize",
+        {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {},
+            "clientInfo": {"name": "pytest", "version": "0"},
+        },
+    )
     assert response["jsonrpc"] == "2.0"
     assert response["result"]["serverInfo"]["name"] == "woodblock_stack"
     assert "tools" in response["result"]["capabilities"]
@@ -31,10 +35,13 @@ def test_server_responds_to_tools_list(mcp_stdio_client) -> None:
 
 
 def test_server_executes_tool_call(mcp_stdio_client) -> None:
-    response = mcp_stdio_client.call("tools/call", {
-        "name": "get_defaults",
-        "arguments": {},
-    })
+    response = mcp_stdio_client.call(
+        "tools/call",
+        {
+            "name": "get_defaults",
+            "arguments": {},
+        },
+    )
     assert response["jsonrpc"] == "2.0"
     result = response["result"]
     assert result["isError"] is False
@@ -44,10 +51,13 @@ def test_server_executes_tool_call(mcp_stdio_client) -> None:
 
 
 def test_server_reports_unknown_tool(mcp_stdio_client) -> None:
-    response = mcp_stdio_client.call("tools/call", {
-        "name": "does_not_exist",
-        "arguments": {},
-    })
+    response = mcp_stdio_client.call(
+        "tools/call",
+        {
+            "name": "does_not_exist",
+            "arguments": {},
+        },
+    )
     result = response["result"]
     assert result["isError"] is True
     payload = json.loads(result["content"][0]["text"])
@@ -61,10 +71,13 @@ def test_server_executes_propose_stack_image_path_alias(tmp_path, mcp_stdio_clie
     arr[:, 4:] = (40, 80, 120)
     Image.fromarray(arr, "RGB").save(img_path)
 
-    response = mcp_stdio_client.call("tools/call", {
-        "name": "propose_stack",
-        "arguments": {"image_path": str(img_path), "solve_profile": "fast"},
-    })
+    response = mcp_stdio_client.call(
+        "tools/call",
+        {
+            "name": "propose_stack",
+            "arguments": {"image_path": str(img_path), "solve_profile": "fast"},
+        },
+    )
     result = response["result"]
     assert result["isError"] is False
     payload = json.loads(result["content"][0]["text"])

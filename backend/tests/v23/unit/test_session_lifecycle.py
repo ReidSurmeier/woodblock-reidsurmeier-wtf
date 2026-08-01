@@ -1,4 +1,5 @@
 """D3.3 RED — session lifecycle (atomic write + filelock + PID heartbeat)."""
+
 from __future__ import annotations
 
 import json
@@ -12,7 +13,9 @@ def _isolate(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
     # Force re-resolution of WB_DATA_DIR
     import importlib
+
     from backend.mcp import paths
+
     importlib.reload(paths)
 
 
@@ -100,6 +103,7 @@ def test_filelock_prevents_concurrent_write(tmp_path: Path, monkeypatch) -> None
     def holder() -> None:
         # Touch while holding the lock by sleeping in the writer path
         from filelock import FileLock
+
         lock = FileLock(str(s.dir / "session.json.lock"))
         with lock:
             held.set()

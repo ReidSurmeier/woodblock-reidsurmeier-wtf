@@ -1,4 +1,5 @@
 """v23 filesystem layout: ULID minter + WB_DATA_DIR + session/plan paths."""
+
 from __future__ import annotations
 
 import os

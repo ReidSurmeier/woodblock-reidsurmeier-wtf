@@ -4,6 +4,7 @@ In D1, the server is a stub: importable, exposes ``app`` (or callable) +
 ``main()`` entry point, but does NOT need FastMCP wired (that lands in
 D19 per the build sequence).
 """
+
 from __future__ import annotations
 
 

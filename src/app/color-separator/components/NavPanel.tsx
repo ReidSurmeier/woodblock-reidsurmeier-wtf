@@ -85,7 +85,6 @@ export default function NavPanel({
   onToggleUpscale,
   hasUpscaleToggle,
   upscaleScale,
-  onUpscaleScaleChange,
   fileName,
   fileInputRef,
   onFileSelect,
@@ -133,8 +132,9 @@ export default function NavPanel({
   manifest,
   plateImages,
   mergeGroups,
-  // activeMergeGroup, onSetActiveMergeGroup, onAddMergeGroup, onRemoveMergeGroup,
-  // mergeSuggestions, onAutoSuggestMerge — kept in interface for caller compat, unused in UI
+  // onUpscaleScaleChange, activeMergeGroup, onSetActiveMergeGroup,
+  // onAddMergeGroup, onRemoveMergeGroup, mergeSuggestions, and
+  // onAutoSuggestMerge are kept in the interface for caller compatibility.
   isMerging,
   onMerge,
   showAbout,

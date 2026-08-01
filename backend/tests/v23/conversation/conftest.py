@@ -5,6 +5,7 @@ The :class:`ScriptedMockOpus` collects an expected ordered list of
 callable (Ring 1 direct call or Ring 2 stdio call). Each ``step()``
 returns the tool result; assertions live in the test body.
 """
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -41,6 +42,7 @@ class ScriptedMockOpus:
 
 def _direct_tool_dispatcher(tool: str, args: dict[str, Any]) -> Any:
     from backend.mcp.registry import call_mcp_tool
+
     return call_mcp_tool(tool, args)
 
 

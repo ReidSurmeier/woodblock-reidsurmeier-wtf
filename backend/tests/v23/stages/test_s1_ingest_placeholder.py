@@ -1,4 +1,5 @@
 """Ring 4 compatibility smoke — S1 ingest stage public symbol."""
+
 from __future__ import annotations
 
 import importlib

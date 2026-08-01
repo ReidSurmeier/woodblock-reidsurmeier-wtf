@@ -13,6 +13,7 @@ Produces a 256×256 RGB image composed of three known impressions:
 The ground-truth α-stack is returned alongside the rendered RGB so a
 solver can be scored against a known answer without any inverse step.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -53,8 +54,8 @@ def make_3imp_synthetic(seed: int = 0) -> SyntheticStack:
     pigment_rgb = np.array(
         [
             [240, 232, 210],  # cream base
-            [ 80, 110, 165],  # cool mid
-            [ 25,  25,  30],  # sumi detail (near-black)
+            [80, 110, 165],  # cool mid
+            [25, 25, 30],  # sumi detail (near-black)
         ],
         dtype=np.uint8,
     )

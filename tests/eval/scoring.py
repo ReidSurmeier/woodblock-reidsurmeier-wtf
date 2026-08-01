@@ -6,6 +6,7 @@ NotImplementedError stubs until MVP-A wires `colour-science` and `scipy`.
 
 Reference: validation-system-v1.md sections 2 + 10.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -75,9 +76,7 @@ def iou_per_mask(pred: np.ndarray, gt: np.ndarray) -> float:
     return float(inter / union)
 
 
-def hungarian_match_blocks(
-    pred_blocks: dict[str, Any], gt_blocks: dict[str, Any]
-) -> float:
+def hungarian_match_blocks(pred_blocks: dict[str, Any], gt_blocks: dict[str, Any]) -> float:
     """Hungarian-matched block IoU.
 
     Builds a cost matrix C[i, j] = 1 - IoU(pred_blocks[i], gt_blocks[j]),

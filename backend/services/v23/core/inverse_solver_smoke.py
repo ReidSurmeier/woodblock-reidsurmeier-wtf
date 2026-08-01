@@ -10,6 +10,7 @@ proves the JAX forward render is gradient-correct + L-BFGS converges.
 The real S5 solver (D7.2+, D10) adds 8-term loss, coarse-to-fine
 pyramid, sparsity + TV + the addendum-v3 family-aligned-support rules.
 """
+
 from __future__ import annotations
 
 import jax
@@ -99,8 +100,8 @@ def solve_3imp_smoke_with_history(
     # Plain gradient descent stand-in just to assert downward trend — the
     # production smoke uses jaxopt.LBFGS via solve_3imp_smoke_with_loss.
     for _ in range(n_iters):
-        l = float(loss_fn(a_raw))
-        history.append(l)
+        loss = float(loss_fn(a_raw))
+        history.append(loss)
         g = grad_fn(a_raw)
         a_raw = a_raw - lr * g
     return history

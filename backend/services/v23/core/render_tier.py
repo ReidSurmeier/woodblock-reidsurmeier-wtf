@@ -19,6 +19,7 @@ Diagnostics surface the addendum-v4 LERP_OVERLAP_GT3 warning when a
 deep stack runs on t1 — heads-up to the artist that Mixbox's mixing
 approximation degrades past 3 stacked translucent impressions.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field

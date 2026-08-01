@@ -1,4 +1,5 @@
 """Central MCP tool registry for the v23 server surface."""
+
 from __future__ import annotations
 
 import inspect
@@ -37,15 +38,19 @@ class MCPTool:
         try:
             inspect.signature(self.func).bind(**args)
         except TypeError as exc:
-            return ToolResult(ok=False, data=None, errors=[
-                WoodblockError(
-                    tier="refusal",
-                    code="INVALID_TOOL_ARGUMENTS",
-                    message=str(exc),
-                    hint=f"check tools/list inputSchema for {self.name}",
-                    recoverable=True,
-                )
-            ])
+            return ToolResult(
+                ok=False,
+                data=None,
+                errors=[
+                    WoodblockError(
+                        tier="refusal",
+                        code="INVALID_TOOL_ARGUMENTS",
+                        message=str(exc),
+                        hint=f"check tools/list inputSchema for {self.name}",
+                        recoverable=True,
+                    )
+                ],
+            )
         result = self.func(**args)
         return _coerce_tool_result(result)
 
@@ -100,15 +105,19 @@ def list_mcp_tools() -> list[dict[str, Any]]:
 def call_mcp_tool(name: str, arguments: dict[str, Any] | None = None) -> ToolResult[dict[str, Any]]:
     tool = TOOLS.get(name)
     if tool is None:
-        return ToolResult(ok=False, data=None, errors=[
-            WoodblockError(
-                tier="refusal",
-                code="UNKNOWN_TOOL",
-                message=f"unknown tool: {name}",
-                hint="call tools/list for the registered woodblock_stack surface",
-                recoverable=True,
-            )
-        ])
+        return ToolResult(
+            ok=False,
+            data=None,
+            errors=[
+                WoodblockError(
+                    tier="refusal",
+                    code="UNKNOWN_TOOL",
+                    message=f"unknown tool: {name}",
+                    hint="call tools/list for the registered woodblock_stack surface",
+                    recoverable=True,
+                )
+            ],
+        )
     return tool.call(arguments)
 
 

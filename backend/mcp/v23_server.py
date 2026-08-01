@@ -5,6 +5,7 @@ include that optional dependency. This module implements the small MCP
 JSON-RPC surface needed for validation and execution: initialize,
 tools/list, and tools/call over Content-Length framed stdio.
 """
+
 from __future__ import annotations
 
 import json
@@ -70,11 +71,14 @@ def _handle_request(request: dict[str, Any]) -> dict[str, Any] | None:
         return None
 
     if method == "initialize":
-        return _jsonrpc_result(request_id, {
-            "protocolVersion": params.get("protocolVersion", PROTOCOL_VERSION),
-            "capabilities": {"tools": {"listChanged": False}},
-            "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
-        })
+        return _jsonrpc_result(
+            request_id,
+            {
+                "protocolVersion": params.get("protocolVersion", PROTOCOL_VERSION),
+                "capabilities": {"tools": {"listChanged": False}},
+                "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
+            },
+        )
     if method == "tools/list":
         return _jsonrpc_result(request_id, {"tools": list_mcp_tools()})
     if method == "tools/call":
@@ -100,15 +104,17 @@ def _call_tool_result(params: dict[str, Any]) -> dict[str, Any]:
         payload = tool_result_to_jsonable(call_mcp_tool(name, {}))
         payload["ok"] = False
         payload["data"] = None
-        payload["errors"] = [{
-            "tier": "refusal",
-            "code": "INVALID_TOOL_ARGUMENTS",
-            "message": "tools/call param 'arguments' must be an object",
-            "hint": "pass arguments as a JSON object",
-            "recoverable": True,
-            "retry_with": None,
-            "context": {},
-        }]
+        payload["errors"] = [
+            {
+                "tier": "refusal",
+                "code": "INVALID_TOOL_ARGUMENTS",
+                "message": "tools/call param 'arguments' must be an object",
+                "hint": "pass arguments as a JSON object",
+                "recoverable": True,
+                "retry_with": None,
+                "context": {},
+            }
+        ]
     else:
         payload = tool_result_to_jsonable(call_mcp_tool(name, arguments))
     return {

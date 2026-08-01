@@ -8,6 +8,7 @@ Per addendum-v3 fix 1: topology constraints stay OUT of optimizer. Per
 addendum-v4: t1_mixbox is the day-1 forward render. Per addendum-v3
 fix 4: combined score arrives via score_candidate_stack (not in S5).
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -65,11 +66,13 @@ def test_s5_solver_bounds_large_internal_grid(monkeypatch) -> None:
 def test_s5_solver_reorders_pulls_light_to_dark() -> None:
     from backend.services.v23.stages import s5_solver
 
-    alpha = np.stack([
-        np.ones((8, 8), dtype=np.float32) * 0.7,
-        np.ones((8, 8), dtype=np.float32) * 0.5,
-        np.ones((8, 8), dtype=np.float32) * 0.9,
-    ])
+    alpha = np.stack(
+        [
+            np.ones((8, 8), dtype=np.float32) * 0.7,
+            np.ones((8, 8), dtype=np.float32) * 0.5,
+            np.ones((8, 8), dtype=np.float32) * 0.9,
+        ]
+    )
     pigment_idx = np.asarray([12, 0, 8], dtype=np.int32)
 
     ordered_alpha, ordered_pigments, order = s5_solver._reorder_for_printing(
@@ -150,10 +153,12 @@ def test_s5_solver_emits_darkest_impression_last() -> None:
     from backend.services.v23.stages import s5_solver
 
     target = np.zeros((8, 8, 3), dtype=np.float32)
-    alpha = np.stack([
-        np.ones((8, 8), dtype=np.float32) * 0.4,
-        np.ones((8, 8), dtype=np.float32) * 0.4,
-    ])
+    alpha = np.stack(
+        [
+            np.ones((8, 8), dtype=np.float32) * 0.4,
+            np.ones((8, 8), dtype=np.float32) * 0.4,
+        ]
+    )
     result = s5_solver.run_s5_solver(
         target_rgb=target,
         pigment_idx=np.asarray([12, 0], dtype=np.int32),
@@ -173,10 +178,15 @@ def test_s5_solver_respects_solve_profile_iter_budgets() -> None:
     warm = s4_warmstart.tan_to_pigment_warmstart(img, target_palette_size=3)
     target = img.astype(np.float32) / 255.0
 
-    fast = s5_solver.run_s5_solver(target, np.asarray(warm.pigment_idx, dtype=np.int32),
-                                    warm.alpha_stack, solve_profile="fast")
-    thorough = s5_solver.run_s5_solver(target, np.asarray(warm.pigment_idx, dtype=np.int32),
-                                        warm.alpha_stack, solve_profile="thorough")
+    fast = s5_solver.run_s5_solver(
+        target, np.asarray(warm.pigment_idx, dtype=np.int32), warm.alpha_stack, solve_profile="fast"
+    )
+    thorough = s5_solver.run_s5_solver(
+        target,
+        np.asarray(warm.pigment_idx, dtype=np.int32),
+        warm.alpha_stack,
+        solve_profile="thorough",
+    )
 
     assert fast.iters_used <= thorough.iters_used
     # Thorough should not be WORSE than fast (it can match if already optimal)
@@ -193,8 +203,9 @@ def test_s5_solver_emits_impressions_in_print_order() -> None:
     warm = s4_warmstart.tan_to_pigment_warmstart(img, target_palette_size=4)
     target = img.astype(np.float32) / 255.0
 
-    result = s5_solver.run_s5_solver(target, np.asarray(warm.pigment_idx, dtype=np.int32),
-                                      warm.alpha_stack, solve_profile="fast")
+    result = s5_solver.run_s5_solver(
+        target, np.asarray(warm.pigment_idx, dtype=np.int32), warm.alpha_stack, solve_profile="fast"
+    )
     assert len(result.impressions) == len(warm.pigment_idx)
     steps = [imp["order_step"] for imp in result.impressions]
     assert steps == list(range(1, len(steps) + 1))

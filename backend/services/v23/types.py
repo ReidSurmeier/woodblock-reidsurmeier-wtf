@@ -6,6 +6,7 @@ Authority: ``/tmp/research-v23-mcp-interfaces.md`` §2.1 (Pigment) and
 All types are frozen + JSON-serialisable. Tensor fields live in the
 ``Plan.tensors`` dict and are NOT carried inline (see §3 of data-model).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -27,7 +28,13 @@ from pydantic import (
 # ---------------------------------------------------------------------------
 
 PigmentFamily = Literal[
-    "cream", "cool", "flesh", "warm", "shadow", "detail", "accent",
+    "cream",
+    "cool",
+    "flesh",
+    "warm",
+    "shadow",
+    "detail",
+    "accent",
 ]
 
 
@@ -164,7 +171,7 @@ class PullGroup(BaseModel):
     label: str = ""
 
     @model_validator(mode="after")
-    def _must_have_impressions(self) -> "PullGroup":
+    def _must_have_impressions(self) -> PullGroup:
         if not self.impression_ids:
             raise ValueError("pull group must reference >= 1 impression")
         return self

@@ -8,6 +8,7 @@ physical woodblock (Pace-Editions style multi-pigment-per-block).
 Adjacency: edge between impressions i and j if mask IoU > τ_conflict
 (default 0.30). Edge means MUST be different blocks.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -57,7 +58,7 @@ def test_block_packing_result_carries_face_tags() -> None:
     alphas[0, :, :2] = 0.7
     alphas[1, :, 2:] = 0.7
     result = pack_blocks(alphas)
-    for imp_id, face_id in result.impression_to_face.items():
+    for face_id in result.impression_to_face.values():
         assert "::face_" in face_id
         assert face_id.startswith("blk_")
 

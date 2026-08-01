@@ -1,4 +1,5 @@
 """D3.1 RED — ULID minter."""
+
 from __future__ import annotations
 
 

@@ -1,4 +1,5 @@
 """Ring 2 fixtures — stdio MCP server subprocess + tiny JSON-RPC client."""
+
 from __future__ import annotations
 
 import json

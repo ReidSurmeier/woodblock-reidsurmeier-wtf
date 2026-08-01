@@ -63,7 +63,6 @@ export default function PlatePreview({
   problems,
 }: PlatePreviewProps) {
   const { width_mm, height_mm, margin_mm } = printSize;
-  const aspectRatio = width_mm / height_mm;
   const kentoPath = useMemo(
     () => generateKentoMarks(width_mm, height_mm, kentoConfig),
     [width_mm, height_mm, kentoConfig]

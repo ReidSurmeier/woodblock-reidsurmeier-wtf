@@ -1,4 +1,5 @@
 """D14.o — empirical overlay tier and tier comparison real wiring."""
+
 from __future__ import annotations
 
 import importlib
@@ -11,12 +12,16 @@ from PIL import Image
 def _isolate(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
     from backend.mcp import paths
+
     importlib.reload(paths)
     from backend.services.v23 import session as _sess
+
     importlib.reload(_sess)
     from backend.services.v23 import orchestrator as _orch
+
     importlib.reload(_orch)
     from backend.mcp.tools import overlay
+
     importlib.reload(overlay)
 
 

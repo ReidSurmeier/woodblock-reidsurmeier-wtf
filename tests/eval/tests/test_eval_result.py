@@ -2,6 +2,7 @@
 
 Covers JSON roundtrip, the is_pass threshold rule, and default field behavior.
 """
+
 from __future__ import annotations
 
 import json
@@ -142,9 +143,7 @@ class TestJsonRoundtrip:
         assert restored.passed == original.passed
 
     def test_summary_stats_survives_roundtrip(self) -> None:
-        original = _make_result(
-            dE2000=_make_stats(mean=0.85, p50=0.7, p95=2.1, p99=2.8, max_=4.0)
-        )
+        original = _make_result(dE2000=_make_stats(mean=0.85, p50=0.7, p95=2.1, p99=2.8, max_=4.0))
         restored = EvalResult.from_json(original.to_json())
         assert isinstance(restored.dE2000, SummaryStats)
         assert restored.dE2000.mean == 0.85

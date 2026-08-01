@@ -4,6 +4,7 @@ import { useCncProcessor } from "./hooks/useCncProcessor";
 import CncNavPanel from "./components/CncNavPanel";
 import PlatePreview from "./components/PlatePreview";
 import { convertUnits } from "@/lib/cnc-engine";
+import Link from "next/link";
 import "./cnc.css";
 
 export default function CncPage() {
@@ -21,9 +22,9 @@ export default function CncPage() {
     <>
       {/* Nav bar */}
       <div className="back-to-tools">
-        <a href="/">
+        <Link href="/">
           &larr; color.separator
-        </a>
+        </Link>
         <a href="https://tools.reidsurmeier.wtf">
           tools.reidsurmeier.wtf
         </a>

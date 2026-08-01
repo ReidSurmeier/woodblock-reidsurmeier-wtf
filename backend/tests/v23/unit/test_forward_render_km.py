@@ -10,6 +10,7 @@ D6.1 — JAX render matches numpy oracle (or placeholder) within ΔE 0.5
 D6.2 — jit compiles + 2nd call ≤ 50 ms on 256² × 7-impression stack (skip on slow CPU)
 D6.3 — jax.grad produces finite gradient on random α
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -98,4 +99,6 @@ def test_order_affects_output() -> None:
     alphas = _random_alpha(16, 16, 2, seed=7)
     a_then_b = np.asarray(forward_render_jax.forward_render(jnp.asarray(alphas), jnp.array([0, 5])))
     b_then_a = np.asarray(forward_render_jax.forward_render(jnp.asarray(alphas), jnp.array([5, 0])))
-    assert not np.allclose(a_then_b, b_then_a, atol=1e-3), "print order has no effect — solver can't designate underprints"
+    assert not np.allclose(a_then_b, b_then_a, atol=1e-3), (
+        "print order has no effect — solver can't designate underprints"
+    )

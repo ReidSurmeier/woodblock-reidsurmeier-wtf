@@ -1,4 +1,5 @@
 """Ring 4 compatibility smoke — S5 solver API and synthetic fixture."""
+
 from __future__ import annotations
 
 import importlib

@@ -7,6 +7,7 @@ into a single call that returns a Plan-stub-with-real-artifacts.
 S4-S10 still return IMPL_PENDING_* in the Plan but S1-S3 produce real
 files under the session dir.
 """
+
 from __future__ import annotations
 
 import io
@@ -22,15 +23,16 @@ def _isolate(monkeypatch, tmp_path: Path) -> None:
     import importlib
 
     from backend.mcp import paths
+
     importlib.reload(paths)
 
 
 def _png_path(tmp_path: Path, h: int = 32, w: int = 32) -> Path:
     arr = np.zeros((h, w, 3), dtype=np.uint8)
     arr[: h // 2, : w // 2] = (220, 175, 145)  # flesh-ish
-    arr[: h // 2, w // 2 :] = (60, 120, 110)   # shadow teal
+    arr[: h // 2, w // 2 :] = (60, 120, 110)  # shadow teal
     arr[h // 2 :, : w // 2] = (245, 235, 210)  # cream
-    arr[h // 2 :, w // 2 :] = (20, 20, 20)     # detail
+    arr[h // 2 :, w // 2 :] = (20, 20, 20)  # detail
     p = tmp_path / "test.png"
     buf = io.BytesIO()
     Image.fromarray(arr).save(buf, format="PNG")
@@ -59,13 +61,15 @@ def _mock_sam(monkeypatch) -> None:
         Image.fromarray(mask, mode="L").save(buf, format="PNG")
         return {
             "image_sha256": params["image_sha256"],
-            "regions": [{
-                "region_id": "rgn_000",
-                "bbox": [2, 2, 6, 6],
-                "area_px": 36,
-                "mask_png_b64": base64.b64encode(buf.getvalue()).decode("ascii"),
-                "mean_oklab": [0.5, 0.0, 0.0],
-            }],
+            "regions": [
+                {
+                    "region_id": "rgn_000",
+                    "bbox": [2, 2, 6, 6],
+                    "area_px": 36,
+                    "mask_png_b64": base64.b64encode(buf.getvalue()).decode("ascii"),
+                    "mean_oklab": [0.5, 0.0, 0.0],
+                }
+            ],
             "sam_wall_s": 0.01,
         }
 

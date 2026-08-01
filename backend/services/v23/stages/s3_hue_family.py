@@ -17,6 +17,7 @@ the 13-pigment Mixbox catalog used in forward_render_jax.PIGMENT_TABLE.
 A future D11+ tier can swap in a learned classifier (e.g. OKLab k-means
 from the actual image) when the corpus shows the heuristic drifts.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -85,20 +86,12 @@ def _classify_pixel_indices(rgb01: NDArray[np.float32]) -> NDArray[np.uint8]:
     labels[cream_mask] = FAMILY_LABEL_TO_INDEX["cream"]
 
     # Cool (any reasonably-bright cool pixel)
-    cool_mask = (
-        (lum > 0.40)
-        & (lum <= 0.85)
-        & cool
-        & (labels == FAMILY_LABEL_TO_INDEX["accent"])
-    )
+    cool_mask = (lum > 0.40) & (lum <= 0.85) & cool & (labels == FAMILY_LABEL_TO_INDEX["accent"])
     labels[cool_mask] = FAMILY_LABEL_TO_INDEX["cool"]
 
     # Shadow (mid-dark teal/green)
     shadow_mask = (
-        (lum > 0.20)
-        & (lum <= 0.50)
-        & cool_or_green
-        & (labels == FAMILY_LABEL_TO_INDEX["accent"])
+        (lum > 0.20) & (lum <= 0.50) & cool_or_green & (labels == FAMILY_LABEL_TO_INDEX["accent"])
     )
     labels[shadow_mask] = FAMILY_LABEL_TO_INDEX["shadow"]
 

@@ -1,4 +1,5 @@
 """D14.h — sRGB -> Lab -> ΔE76 sanity tests."""
+
 from __future__ import annotations
 
 import numpy as np

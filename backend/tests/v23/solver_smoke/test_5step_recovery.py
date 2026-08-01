@@ -14,6 +14,7 @@ Per addendum-v3 fix 1: topology constraints (tiny-island filter) are
 NOT in the optimizer loss — they live in S6 post-solve. Solver only sees
 ΔE + sparsity + smoothness terms.
 """
+
 from __future__ import annotations
 
 import os
@@ -25,7 +26,6 @@ import pytest
 pytest.importorskip("jax")
 pytest.importorskip("jaxopt")
 
-import jax  # noqa: E402
 import jax.numpy as jnp  # noqa: E402
 
 from backend.services.v23.core import forward_render_jax  # noqa: E402
@@ -36,13 +36,12 @@ def _synth_3imp_ground_truth(seed: int = 0) -> tuple[np.ndarray, np.ndarray, np.
 
     Returns (alphas_gt, pigment_idx, target_rgb).
     """
-    rng = np.random.default_rng(seed)
     h, w = 64, 64
     alphas = np.zeros((h, w, 3), dtype=np.float32)
     # Three disjoint-ish patches
-    alphas[8:32, 8:32, 0] = 0.85       # impression 0 — cadmium yellow patch
-    alphas[16:48, 24:56, 1] = 0.70     # impression 1 — cobalt blue patch
-    alphas[32:56, 32:56, 2] = 0.55     # impression 2 — ivory black patch
+    alphas[8:32, 8:32, 0] = 0.85  # impression 0 — cadmium yellow patch
+    alphas[16:48, 24:56, 1] = 0.70  # impression 1 — cobalt blue patch
+    alphas[32:56, 32:56, 2] = 0.55  # impression 2 — ivory black patch
     # A bit of smoothing so the boundary isn't a perfect step
     pigment_idx = np.array([0, 7, 12], dtype=np.int32)  # cad_y, cobalt_b, ivory_blk
     target = np.asarray(
@@ -68,7 +67,7 @@ def test_synth_3imp_fixture_round_trips() -> None:
     reason="V23_SKIP_SMOKE=1",
 )
 def test_synth_3imp_smoke_loss_drops_substantially() -> None:
-    """5-step smoke: L-BFGS must drop loss by ≥ 90% in 30s. Wired-backwards regressions trip this immediately."""
+    """Require L-BFGS to drop loss by at least 90 percent in 30 seconds."""
     from backend.services.v23.core.inverse_solver_smoke import solve_3imp_smoke_with_loss
 
     _, pigment_idx, target = _synth_3imp_ground_truth()

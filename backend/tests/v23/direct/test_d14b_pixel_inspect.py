@@ -6,6 +6,7 @@ Exercises the full path:
 3. Call dE_at(plan_id, x, y) -> assert real ΔE + RGB triples come back
 4. Call pigment_at(plan_id, x, y) -> assert per-impression rows sorted by order_step
 """
+
 from __future__ import annotations
 
 import importlib
@@ -19,10 +20,13 @@ from PIL import Image
 def _isolate(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
     from backend.mcp import paths
+
     importlib.reload(paths)
     from backend.services.v23 import session as _sess
+
     importlib.reload(_sess)
     from backend.services.v23 import orchestrator as _orch
+
     importlib.reload(_orch)
 
 
@@ -43,6 +47,7 @@ def real_plan(tmp_path: Path, monkeypatch):
     monkeypatch.setenv("WOODBLOCK_DISABLE_SAM", "1")
     img_path = _write_test_image(tmp_path)
     from backend.services.v23 import orchestrator as _orch
+
     plan = _orch.run_pipeline_partial(str(img_path), solve_profile="fast")
     return plan
 
@@ -61,6 +66,7 @@ def test_real_plan_persists_alpha_stack_and_target(real_plan) -> None:
 
 def test_dE_at_returns_real_values(real_plan) -> None:
     from backend.mcp.tools import introspection
+
     r = introspection.dE_at(real_plan.plan_id, 5, 5)
     assert r.ok is True, r.errors
     assert r.data["dE"] is not None
@@ -75,6 +81,7 @@ def test_dE_at_returns_real_values(real_plan) -> None:
 
 def test_dE_at_rejects_out_of_bounds(real_plan) -> None:
     from backend.mcp.tools import introspection
+
     r = introspection.dE_at(real_plan.plan_id, 999, 999)
     assert r.ok is False
     assert r.errors[0].code == "OUT_OF_BOUNDS"
@@ -82,6 +89,7 @@ def test_dE_at_rejects_out_of_bounds(real_plan) -> None:
 
 def test_pigment_at_returns_real_stack(real_plan) -> None:
     from backend.mcp.tools import introspection
+
     r = introspection.pigment_at(real_plan.plan_id, 5, 5)
     assert r.ok is True, r.errors
     impressions = r.data["impressions"]
@@ -100,6 +108,7 @@ def test_pigment_at_returns_real_stack(real_plan) -> None:
 
 def test_pigment_at_rejects_out_of_bounds(real_plan) -> None:
     from backend.mcp.tools import introspection
+
     r = introspection.pigment_at(real_plan.plan_id, 999, 999)
     assert r.ok is False
     assert r.errors[0].code == "OUT_OF_BOUNDS"

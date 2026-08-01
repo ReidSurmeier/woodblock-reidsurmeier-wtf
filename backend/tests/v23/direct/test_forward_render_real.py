@@ -1,4 +1,5 @@
 """D13.a RED — forward_render real path renders a persisted plan."""
+
 from __future__ import annotations
 
 import io
@@ -13,6 +14,7 @@ def _isolate(monkeypatch, tmp_path: Path) -> None:
     import importlib
 
     from backend.mcp import paths
+
     importlib.reload(paths)
 
 

@@ -11,7 +11,10 @@ Per addendum-v3 fix 5: backend ``pick_template_hints()`` returns
 MEASURABLE features only (family-area dict + dominant-family). Subject
 classification is Opus's job, NOT the backend's.
 """
+
 from __future__ import annotations
+
+from dataclasses import FrozenInstanceError
 
 import pytest
 
@@ -87,8 +90,13 @@ def test_template_autoselect_portrait_when_flesh_dominant() -> None:
     from backend.services.v23.core.templates import suggest_template
 
     areas = {
-        "cream": 0.20, "cool": 0.05, "flesh": 0.28,
-        "warm": 0.12, "shadow": 0.05, "detail": 0.10, "accent": 0.20,
+        "cream": 0.20,
+        "cool": 0.05,
+        "flesh": 0.28,
+        "warm": 0.12,
+        "shadow": 0.05,
+        "detail": 0.10,
+        "accent": 0.20,
     }
     suggestion = suggest_template(family_areas=areas)
     assert suggestion.template_id == "portrait_emma"
@@ -100,8 +108,13 @@ def test_template_autoselect_landscape_when_green_blue_dominant() -> None:
     from backend.services.v23.core.templates import suggest_template
 
     areas = {
-        "cream": 0.10, "cool": 0.35, "flesh": 0.0,
-        "warm": 0.15, "shadow": 0.15, "detail": 0.10, "accent": 0.15,
+        "cream": 0.10,
+        "cool": 0.35,
+        "flesh": 0.0,
+        "warm": 0.15,
+        "shadow": 0.15,
+        "detail": 0.10,
+        "accent": 0.15,
     }
     s = suggest_template(family_areas=areas)
     assert s.template_id == "landscape"
@@ -111,8 +124,13 @@ def test_template_autoselect_high_chroma_when_one_family_dominates() -> None:
     from backend.services.v23.core.templates import suggest_template
 
     areas = {
-        "cream": 0.05, "cool": 0.05, "flesh": 0.0,
-        "warm": 0.40, "shadow": 0.05, "detail": 0.05, "accent": 0.40,
+        "cream": 0.05,
+        "cool": 0.05,
+        "flesh": 0.0,
+        "warm": 0.40,
+        "shadow": 0.05,
+        "detail": 0.05,
+        "accent": 0.40,
     }
     s = suggest_template(family_areas=areas)
     assert s.template_id == "high_chroma_graphic"
@@ -132,5 +150,5 @@ def test_template_slot_dataclass_is_frozen() -> None:
     from backend.services.v23.core.templates import TemplateSlot
 
     slot = TemplateSlot(family="cream", role="base", expected_okL=0.95, expected_area_pct=15.0)
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         slot.family = "cool"  # type: ignore[misc]

@@ -8,6 +8,7 @@ that satisfies the v2 validators in D2.
 Note: importing these from a test triggers ``backend.services.v23.types``
 import. That module lands in D2 and is already green at scaffold time.
 """
+
 from __future__ import annotations
 
 from typing import Any

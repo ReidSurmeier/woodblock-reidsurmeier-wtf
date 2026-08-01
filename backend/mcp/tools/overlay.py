@@ -1,4 +1,5 @@
 """D9B — Tier 6 overlay tools (4 tools, addendum-v4 render tier dispatch)."""
+
 from __future__ import annotations
 
 import csv
@@ -16,10 +17,19 @@ from backend.services.v23.core import forward_render_jax as _fr
 from backend.services.v23.core import render_tier as _rt
 
 _PIGMENT_NAMES = [
-    "cadmium_yellow", "hansa_yellow", "cadmium_orange", "cadmium_red",
-    "quinacridone_magenta", "cobalt_violet", "ultramarine_blue",
-    "cobalt_blue", "viridian_green", "forest_green",
-    "burnt_sienna", "raw_umber", "ivory_black",
+    "cadmium_yellow",
+    "hansa_yellow",
+    "cadmium_orange",
+    "cadmium_red",
+    "quinacridone_magenta",
+    "cobalt_violet",
+    "ultramarine_blue",
+    "cobalt_blue",
+    "viridian_green",
+    "forest_green",
+    "burnt_sienna",
+    "raw_umber",
+    "ivory_black",
 ]
 
 
@@ -62,7 +72,7 @@ def _parse_rgb(row: dict[str, str]) -> list[float]:
     else:
         raw = row.get("rgb", "").strip().strip("[]()")
         if raw.startswith("#") and len(raw) == 7:
-            vals = [int(raw[i:i + 2], 16) for i in (1, 3, 5)]
+            vals = [int(raw[i : i + 2], 16) for i in (1, 3, 5)]
         else:
             parts = raw.replace(";", " ").replace(",", " ").split()
             if len(parts) != 3:
@@ -151,13 +161,15 @@ def _choose_tier_for_plan(stack_depth: int) -> dict[str, Any]:
     errors: list[WoodblockError] = []
     if tier == "t3_spectral":
         tier = "t2_empirical" if ctx.empirical_lut_available else "t1_mixbox"
-        errors.append(WoodblockError(
-            tier="degraded",
-            code="SPECTRAL_RENDER_UNAVAILABLE",
-            message="spectral K/S data is present, but local T3 rendering is not enabled",
-            hint="use t2_empirical locally or run the spectral renderer on the GPU host",
-            recoverable=True,
-        ))
+        errors.append(
+            WoodblockError(
+                tier="degraded",
+                code="SPECTRAL_RENDER_UNAVAILABLE",
+                message="spectral K/S data is present, but local T3 rendering is not enabled",
+                hint="use t2_empirical locally or run the spectral renderer on the GPU host",
+                recoverable=True,
+            )
+        )
     return {"tier": tier, "errors": errors}
 
 
@@ -175,30 +187,45 @@ def get_render_tier() -> ToolResult[dict[str, Any]]:
         stack_depth=0,  # solver fills in real depth at simulate_overprint time
     )
     chosen = _rt.choose_render_tier(ctx)
-    return ToolResult(ok=True, data={
-        "tier": chosen,
-        "calibration_id": cal_id,
-        "empirical_lut_available": ctx.empirical_lut_available,
-        "spectral_ks_available": ctx.spectral_ks_available,
-    })
+    return ToolResult(
+        ok=True,
+        data={
+            "tier": chosen,
+            "calibration_id": cal_id,
+            "empirical_lut_available": ctx.empirical_lut_available,
+            "spectral_ks_available": ctx.spectral_ks_available,
+        },
+    )
 
 
 def upload_swatch_overprint_matrix(csv_path: str) -> ToolResult[dict[str, Any]]:
     """Ingest a 2-layer overprint CSV (base × top × dilution × measured RGB) → T2 LUT."""
     p = Path(csv_path)
     if not p.is_file():
-        return ToolResult(ok=False, data=None, errors=[
-            WoodblockError(tier="refusal", code="CSV_FILE_MISSING",
-                           message=f"swatch CSV not found: {csv_path}",
-                           recoverable=True),
-        ])
+        return ToolResult(
+            ok=False,
+            data=None,
+            errors=[
+                WoodblockError(
+                    tier="refusal",
+                    code="CSV_FILE_MISSING",
+                    message=f"swatch CSV not found: {csv_path}",
+                    recoverable=True,
+                ),
+            ],
+        )
     try:
         rows = _parse_swatch_csv(p)
     except (ValueError, KeyError) as exc:
-        return ToolResult(ok=False, data=None, errors=[
-            WoodblockError(tier="refusal", code="INVALID_SWATCH_CSV",
-                           message=str(exc), recoverable=True),
-        ])
+        return ToolResult(
+            ok=False,
+            data=None,
+            errors=[
+                WoodblockError(
+                    tier="refusal", code="INVALID_SWATCH_CSV", message=str(exc), recoverable=True
+                ),
+            ],
+        )
 
     base_idx = np.asarray([r["base_idx"] for r in rows], dtype=np.int32)
     top_idx = np.asarray([r["top_idx"] for r in rows], dtype=np.int32)
@@ -206,8 +233,7 @@ def upload_swatch_overprint_matrix(csv_path: str) -> ToolResult[dict[str, Any]]:
     measured_rgb = np.asarray([r["measured_rgb"] for r in rows], dtype=np.float32)
     predicted_rgb = np.asarray([r["predicted_rgb"] for r in rows], dtype=np.float32)
     mean_bias = (
-        (measured_rgb - predicted_rgb).mean(axis=0)
-        if rows else np.zeros(3, dtype=np.float32)
+        (measured_rgb - predicted_rgb).mean(axis=0) if rows else np.zeros(3, dtype=np.float32)
     ).astype(np.float32)
 
     calibration_id = f"empirical_matrix_{p.stem}"
@@ -224,14 +250,17 @@ def upload_swatch_overprint_matrix(csv_path: str) -> ToolResult[dict[str, Any]]:
         source_csv=np.asarray(str(p)),
     )
     (paths.WB_DATA_DIR / "active_calibration").write_text(calibration_id)
-    return ToolResult(ok=True, data={
-        "csv_path": str(p),
-        "rows_ingested": len(rows),
-        "lut_path": str(lut_path),
-        "calibration_id": calibration_id,
-        "mean_bias_rgb": [round(float(v), 5) for v in mean_bias],
-        "tier_after_ingest": get_render_tier().data["tier"],
-    })
+    return ToolResult(
+        ok=True,
+        data={
+            "csv_path": str(p),
+            "rows_ingested": len(rows),
+            "lut_path": str(lut_path),
+            "calibration_id": calibration_id,
+            "mean_bias_rgb": [round(float(v), 5) for v in mean_bias],
+            "tier_after_ingest": get_render_tier().data["tier"],
+        },
+    )
 
 
 def _parse_swatch_csv(p: Path) -> list[dict[str, Any]]:
@@ -250,13 +279,15 @@ def _parse_swatch_csv(p: Path) -> list[dict[str, Any]]:
             base_rgb = _fr.PIGMENT_TABLE[base_idx]
             top_rgb = _fr.PIGMENT_TABLE[top_idx]
             pred = (1.0 - dilution) * base_rgb + dilution * top_rgb
-            rows.append({
-                "base_idx": base_idx,
-                "top_idx": top_idx,
-                "dilution": float(np.clip(dilution, 0.0, 1.0)),
-                "measured_rgb": measured,
-                "predicted_rgb": pred.astype(np.float32),
-            })
+            rows.append(
+                {
+                    "base_idx": base_idx,
+                    "top_idx": top_idx,
+                    "dilution": float(np.clip(dilution, 0.0, 1.0)),
+                    "measured_rgb": measured,
+                    "predicted_rgb": pred.astype(np.float32),
+                }
+            )
     return rows
 
 
@@ -268,11 +299,15 @@ def compare_render_tiers(plan_id: str) -> ToolResult[dict[str, Any]]:
     try:
         plan = _orch.load_plan(plan_id)
     except _orch.OrchestratorError as exc:
-        return ToolResult(ok=True, data={
-            "plan_id": plan_id,
-            "tier_renders": {"t1_mixbox": None},
-            "dE_deltas": {},
-        }, errors=[exc.error])
+        return ToolResult(
+            ok=True,
+            data={
+                "plan_id": plan_id,
+                "tier_renders": {"t1_mixbox": None},
+                "dE_deltas": {},
+            },
+            errors=[exc.error],
+        )
 
     plan_dir = _orch._plan_dir(plan.session_id, plan.plan_id)
     t1_rgb = _image_bytes_to_rgb(s10_emit._render_composite(plan))
@@ -296,22 +331,30 @@ def compare_render_tiers(plan_id: str) -> ToolResult[dict[str, Any]]:
         }
     else:
         renders["t2_empirical"] = None
-        errors.append(WoodblockError(
-            tier="warn",
-            code="T2_LUT_MISSING",
-            message="no empirical swatch LUT is active; only t1_mixbox was rendered",
-            hint="call upload_swatch_overprint_matrix(csv_path)",
-            recoverable=True,
-        ))
+        errors.append(
+            WoodblockError(
+                tier="warn",
+                code="T2_LUT_MISSING",
+                message="no empirical swatch LUT is active; only t1_mixbox was rendered",
+                hint="call upload_swatch_overprint_matrix(csv_path)",
+                recoverable=True,
+            )
+        )
     renders["t3_spectral"] = None
-    return ToolResult(ok=True, data={
-        "plan_id": plan_id,
-        "tier_renders": renders,
-        "dE_deltas": deltas,
-    }, errors=errors)
+    return ToolResult(
+        ok=True,
+        data={
+            "plan_id": plan_id,
+            "tier_renders": renders,
+            "dE_deltas": deltas,
+        },
+        errors=errors,
+    )
 
 
 __all__ = [
-    "simulate_overprint", "get_render_tier",
-    "upload_swatch_overprint_matrix", "compare_render_tiers",
+    "simulate_overprint",
+    "get_render_tier",
+    "upload_swatch_overprint_matrix",
+    "compare_render_tiers",
 ]
