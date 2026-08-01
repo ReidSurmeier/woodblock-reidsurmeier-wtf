@@ -1,5 +1,5 @@
 numpy==2.4.2
-Pillow==12.1.1
+Pillow==12.3.0
 pillow-heif==1.2.1
 scikit-learn==1.8.0
 scikit-image==0.26.0
