@@ -71,6 +71,9 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertIn("ruff==0.15.20", workflow)
         self.assertIn('python-version: ["3.11", "3.12"]', workflow)
         self.assertIn("npm audit --audit-level=low", workflow)
+        self.assertIn("pip-audit==2.10.1", workflow)
+        self.assertIn("pip-audit -r backend/requirements.txt", workflow)
+        self.assertIn("backend/tests/unit/routes_v23/test_sam_v23.py", workflow)
         self.assertEqual(package["scripts"]["build"], "next build --webpack")
         self.assertIn("node", compose)
         self.assertTrue((ROOT / "eslint.config.mjs").is_file())
@@ -117,6 +120,15 @@ class RepositoryContractTests(unittest.TestCase):
 
         self.assertNotIn('"mixbox>=2.0"', pyproject)
         self.assertEqual(pyproject.count('"mixbox>=1.0.5,<2"'), 2)
+
+    def test_inherited_backend_uses_patched_media_and_upload_dependencies(self) -> None:
+        requirements = set(
+            (ROOT / "backend" / "requirements.txt").read_text(encoding="utf-8").splitlines()
+        )
+
+        self.assertIn("Pillow==12.3.0", requirements)
+        self.assertIn("pillow-heif==1.3.0", requirements)
+        self.assertIn("python-multipart==0.0.31", requirements)
 
 
 if __name__ == "__main__":

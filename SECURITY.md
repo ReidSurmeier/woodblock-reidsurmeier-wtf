@@ -35,5 +35,7 @@ secret-scan output.
 
 GitHub Actions must use commit-pinned actions. Python and Node dependency
 changes require their normal lock/metadata updates, the portable validation
-gate, and an active-tree secret scan before merge. GPU or physical-print
-success must not be inferred from a portable CPU workflow.
+gate, and an active-tree secret scan before merge. The inherited
+`backend/requirements.txt` manifest must also pass pip-audit and its image
+upload route test. GPU or physical-print success must not be inferred from a
+portable CPU workflow.
