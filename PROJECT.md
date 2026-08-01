@@ -68,6 +68,9 @@ Verified after the issue 3 repair:
 - the inherited frontend reports zero npm audit vulnerabilities, passes ESLint
   and TypeScript, and completes its warning-free production build in 35.34
   seconds with the maintained webpack command;
+- the inherited backend manifest installs from scratch, reports no known
+  vulnerabilities under pip-audit 2.10.1, and passes all 6 multipart/Pillow SAM
+  route tests;
 - Next.js/Sentry configuration uses the current instrumentation and proxy file
   conventions; and
 - the Docker frontend probe uses Node, matching the installed runtime instead
