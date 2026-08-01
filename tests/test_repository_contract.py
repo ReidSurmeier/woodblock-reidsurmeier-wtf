@@ -112,6 +112,12 @@ class RepositoryContractTests(unittest.TestCase):
         self.assertIn('@pytest.fixture(scope="module")', hitl_tests)
         self.assertIn("def generated_two_plans", hitl_tests)
 
+    def test_solver_extras_use_the_available_mixbox_release_line(self) -> None:
+        pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+
+        self.assertNotIn('"mixbox>=2.0"', pyproject)
+        self.assertEqual(pyproject.count('"mixbox>=1.0.5,<2"'), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
