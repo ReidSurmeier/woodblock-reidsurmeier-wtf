@@ -880,7 +880,16 @@ export function useColorSeparator() {
       setProgressStage(null);
       setProgressPct(0);
     }
-  }, [file, manifest, compositeUrl, sourceUrl, plateImages, generateDiagram, getParams]);
+  }, [
+    file,
+    manifest,
+    compositeUrl,
+    sourceUrl,
+    plateImages,
+    generateDiagram,
+    getParams,
+    upscale,
+  ]);
 
   const addMergeGroup = useCallback(() => {
     setMergeGroups((prev) => {
@@ -970,7 +979,15 @@ export function useColorSeparator() {
       setProgressStage(null);
       setProgressPct(0);
     }
-  }, [file, mergeGroups, manifest, getParams, upscaleHash, fetchPlateImagesFromApi]);
+  }, [
+    file,
+    mergeGroups,
+    manifest,
+    getParams,
+    upscaleHash,
+    fetchPlateImagesFromApi,
+    plateImages.length,
+  ]);
 
   const handlePlateZoom = useCallback((index: number | null) => {
     if (index !== null) {

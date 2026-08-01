@@ -1,14 +1,20 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const backendUrl = process.env.BACKEND_URL ?? "http://localhost:8001";
+const repositoryRoot = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false, // Remove X-Powered-By: Next.js
+  turbopack: {
+    root: repositoryRoot,
+  },
   experimental: {
     proxyTimeout: 600_000, // 600s timeout for v20 SAM processing with up to 35 plates
-    middlewareClientMaxBodySize: "50mb", // Large images at 4x upscale can be 10MB+
+    proxyClientMaxBodySize: "50mb", // Large images at 4x upscale can be 10MB+
   },
   async headers() {
     return [

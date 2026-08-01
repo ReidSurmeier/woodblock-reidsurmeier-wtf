@@ -12,6 +12,7 @@ gateway (which is unreachable from the test environment). Tests that
 specifically exercise SAM behaviour patch the env or the sam_client
 module directly.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

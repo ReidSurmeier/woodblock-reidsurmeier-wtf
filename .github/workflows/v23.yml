@@ -2,39 +2,72 @@ name: v23-mcp-ci
 
 on:
   push:
-    branches: [main, "pipeline/v23-**"]
+    branches: [main]
   pull_request:
-    paths:
-      - "backend/mcp/**"
-      - "backend/services/v23/**"
-      - "backend/tests/v23/**"
-      - ".github/workflows/v23.yml"
+
+permissions:
+  contents: read
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+  portable-python:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
-      - run: pip install ruff
-      - run: ruff check backend/mcp backend/services/v23 backend/tests/v23
-
-  scaffold-tests:
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
-      - run: pip install pytest pydantic
-      - run: pytest backend/tests/v23/scaffold -x -q
-
-  banned-terms:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: WB-LANG-01 lint
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install portable validation stack
         run: |
-          ! grep -rEn 'recovered.{0,20}underlayer|true underlayer|actual block|ground.truth.*stack|detect.{0,20}underprint' \
-              backend/mcp backend/services/v23 || (echo "banned term found" && exit 1)
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[mcp,io,solver-cpu,dev]"
+          python -m pip install ruff==0.15.20
+      - name: Repository contract
+        run: python -m unittest tests.test_repository_contract -v
+      - name: Ruff
+        run: ruff check backend/mcp backend/services/v23 backend/tests/v23 tests
+      - name: Portable v23 tests
+        env:
+          WOODBLOCK_HOME: ${{ runner.temp }}/woodblock
+        run: |
+          python -m pytest \
+            backend/tests/v23/scaffold \
+            backend/tests/v23/unit \
+            -m "not solver" \
+            -q
+      - name: Compile Python
+        run: python -m compileall -q backend tests
+
+  inherited-review-frontend:
+    name: Inherited review frontend
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=low
+      - run: npm run check
+
+  domain-language:
+    name: Domain language
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: WB-LANG-01
+        run: |
+          ! grep -rEn \
+            'recovered.{0,20}underlayer|true underlayer|actual block|ground.truth.*stack|detect.{0,20}underprint' \
+            backend/mcp backend/services/v23

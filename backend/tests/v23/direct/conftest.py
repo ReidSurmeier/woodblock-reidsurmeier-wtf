@@ -8,6 +8,7 @@ Real implementations land alongside the D9 tool decorators; until then,
 the fixtures stay structural so the placeholder smoke test xfails
 cleanly and goes green the moment D9 wires the tools.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

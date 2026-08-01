@@ -7,6 +7,7 @@ Reads ``corpus_tiers.yaml`` once per session, exposes:
   a time with its tier label + ΔE gate. Tests iterate via
   ``@pytest.mark.parametrize`` over the same fixture ids.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

@@ -9,6 +9,7 @@ actual engine + scoring math.
 
 Reference: validation-system-v1.md sections 2 + 10.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -19,9 +20,7 @@ from typing import Any
 from .eval_result import EvalResult, SummaryStats
 
 
-def discover_fixtures(
-    corpus_root: Path, tier: str | None = None
-) -> list[dict[str, Any]]:
+def discover_fixtures(corpus_root: Path, tier: str | None = None) -> list[dict[str, Any]]:
     """Walk `corpus_root` for `*/annotations.json` files.
 
     Each fixture's directory holds the original image + ground-truth annotations
@@ -41,9 +40,7 @@ def discover_fixtures(
     return fixtures
 
 
-def eval_fixture(
-    fixture_dir: Path, ann: dict[str, Any], engine: str = "stub"
-) -> EvalResult:
+def eval_fixture(fixture_dir: Path, ann: dict[str, Any], engine: str = "stub") -> EvalResult:
     """Run the pipeline against one fixture and score the result.
 
     V2 stub: returns a passing-by-default result. MVP-A:
@@ -70,9 +67,7 @@ def _build_parser() -> argparse.ArgumentParser:
         prog="run_corpus",
         description="Run the validation eval corpus and emit results JSON.",
     )
-    p.add_argument(
-        "--corpus", type=Path, default=Path("corpus"), help="Corpus root directory."
-    )
+    p.add_argument("--corpus", type=Path, default=Path("corpus"), help="Corpus root directory.")
     p.add_argument("--tier", default=None, help="Filter to a single tier (A, B, ...).")
     p.add_argument("--fixture", default=None, help="Run a single fixture by image_id.")
     p.add_argument(

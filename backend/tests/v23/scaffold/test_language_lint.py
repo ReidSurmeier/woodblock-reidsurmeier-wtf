@@ -4,10 +4,10 @@ Posture lock from CONTEXT.md + addendum-v2: never claim "recovered true
 underlayers", "actual block", "ground-truth stack", or "detected
 underprint". This grep is the source-of-truth enforcement.
 """
+
 from __future__ import annotations
 
 import re
-import subprocess
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[4]
@@ -33,4 +33,6 @@ def test_no_banned_terms_in_v23_code() -> None:
             for lineno, line in enumerate(p.read_text().splitlines(), start=1):
                 if BANNED.search(line):
                     hits.append((str(p.relative_to(REPO)), lineno, line.strip()))
-    assert not hits, f"WB-LANG-01 violations:\n" + "\n".join(f"  {f}:{n}: {l}" for f, n, l in hits)
+    assert not hits, "WB-LANG-01 violations:\n" + "\n".join(
+        f"  {file_name}:{line_number}: {line}" for file_name, line_number, line in hits
+    )

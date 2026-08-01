@@ -6,13 +6,13 @@ runner can compare results across engines without per-engine adapter code.
 
 Reference: validation-system-v1.md section 2 + 10.
 """
+
 from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Literal, Optional
-
+from datetime import UTC, datetime
+from typing import Any, Literal
 
 EngineName = Literal["tan", "km_nnls", "qwen_layered", "stub"]
 
@@ -42,9 +42,9 @@ class EvalResult:
     recon_path: str
     dE_heatmap_path: str
     dE2000: SummaryStats
-    pigment_iou: Optional[dict[str, float]] = None
-    block_iou: Optional[float] = None
-    chromatic_class_recovery: Optional[float] = None
+    pigment_iou: dict[str, float] | None = None
+    block_iou: float | None = None
+    chromatic_class_recovery: float | None = None
     block_count: int = 0
     pigment_count: int = 0
     print_order: list[str] = field(default_factory=list)
@@ -53,9 +53,7 @@ class EvalResult:
     engine: EngineName = "stub"
     params: dict[str, Any] = field(default_factory=dict)
     passed: bool = False
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     @property
     def is_pass(self) -> bool:
@@ -72,7 +70,7 @@ class EvalResult:
         return json.dumps(asdict(self), indent=2)
 
     @classmethod
-    def from_json(cls, s: str) -> "EvalResult":
+    def from_json(cls, s: str) -> EvalResult:
         """Deserialize from JSON produced by `to_json`.
 
         Rehydrates the nested SummaryStats dataclass — plain dict reconstruction

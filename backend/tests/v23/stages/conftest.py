@@ -5,6 +5,7 @@ The ``synthetic_3imp_stack`` fixture is the workhorse: a deterministic
 :mod:`backend.tests.v23._helpers.synthetic_fixtures`. S5 solver tests
 use it for the 5-step smoke recovery (D7.1) without paying SAM cost.
 """
+
 from __future__ import annotations
 
 import pytest

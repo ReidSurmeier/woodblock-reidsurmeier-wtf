@@ -11,11 +11,11 @@ Per addendum-v3 fix 6 + addendum-v4 WB-LANG-02:
 - t1_mixbox recipe carries the "as if pre-mixed" qualifier
 - Banned-term grep (WB-LANG-01) enforced in tests, not just docs
 """
+
 from __future__ import annotations
 
 import json
 import zipfile
-from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -54,27 +54,29 @@ def _render_composite(plan: _orch.PartialPlan) -> bytes:
         alpha_hwm = np.zeros((plan.height, plan.width, m), dtype=np.float32)
         for i, imp in enumerate(plan.impressions):
             alpha_hwm[..., i] = float(imp.get("mean_alpha", 0.0))
-        pigment_idx = np.array(
-            [imp["pigment_id"] for imp in plan.impressions], dtype=np.int32
-        )
+        pigment_idx = np.array([imp["pigment_id"] for imp in plan.impressions], dtype=np.int32)
 
-    rgb = np.asarray(forward_render_jax.forward_render(
-        jnp.asarray(alpha_hwm, dtype=jnp.float32),
-        jnp.asarray(pigment_idx, dtype=jnp.int32),
-    ))
+    rgb = np.asarray(
+        forward_render_jax.forward_render(
+            jnp.asarray(alpha_hwm, dtype=jnp.float32),
+            jnp.asarray(pigment_idx, dtype=jnp.int32),
+        )
+    )
     arr = (np.clip(rgb, 0.0, 1.0) * 255.0).astype(np.uint8)
     return _np_to_png_bytes(arr)
 
 
 def _np_to_png_bytes(arr: np.ndarray) -> bytes:
     import io
+
     buf = io.BytesIO()
     Image.fromarray(arr, mode="RGB").save(buf, format="PNG")
     return buf.getvalue()
 
 
 def _build_per_impression_png(
-    plan: _orch.PartialPlan, impression_idx: int,
+    plan: _orch.PartialPlan,
+    impression_idx: int,
 ) -> bytes:
     """Per-impression preview = solid pigment color × mean_alpha over washi."""
     imp = plan.impressions[impression_idx]
@@ -110,11 +112,14 @@ def _build_manifest(plan: _orch.PartialPlan) -> dict[str, Any]:
         ),
         "impressions": plan.impressions,
         "blocks": [
-            {"block_id": f"blk_{i:02d}", "face_ids": [f"blk_{i:02d}::face_a"],
-             "material": "maple_plywood",
-             "impression_ids": [
-                 imp_id for imp_id, b in plan.impression_to_block.items() if b == i
-             ]}
+            {
+                "block_id": f"blk_{i:02d}",
+                "face_ids": [f"blk_{i:02d}::face_a"],
+                "material": "maple_plywood",
+                "impression_ids": [
+                    imp_id for imp_id, b in plan.impression_to_block.items() if b == i
+                ],
+            }
             for i in range(plan.block_count)
         ],
         "pull_groups": plan.pull_groups,
@@ -150,10 +155,19 @@ def _build_recipe_md(plan: _orch.PartialPlan) -> str:
         "",
     ]
     pigment_names = [
-        "cadmium_yellow", "hansa_yellow", "cadmium_orange", "cadmium_red",
-        "quinacridone_magenta", "cobalt_violet", "ultramarine_blue",
-        "cobalt_blue", "viridian_green", "forest_green",
-        "burnt_sienna", "raw_umber", "ivory_black",
+        "cadmium_yellow",
+        "hansa_yellow",
+        "cadmium_orange",
+        "cadmium_red",
+        "quinacridone_magenta",
+        "cobalt_violet",
+        "ultramarine_blue",
+        "cobalt_blue",
+        "viridian_green",
+        "forest_green",
+        "burnt_sienna",
+        "raw_umber",
+        "ivory_black",
     ]
     for imp in plan.impressions:
         pid = imp["pigment_id"]
@@ -166,14 +180,16 @@ def _build_recipe_md(plan: _orch.PartialPlan) -> str:
         )
     if not plan.impressions:
         lines.append("(no impressions — solver did not run)")
-    lines.extend([
-        "",
-        "## Notes",
-        "",
-        "- v23-MCP day-1 ship: plan_id is real and persistent under the session.",
-        "- Confidence labels: per-region ambiguous / inferred / visible (see manifest).",
-        "- Carve order: per block, ascending order_step. Kento marks added at CNC export.",
-    ])
+    lines.extend(
+        [
+            "",
+            "## Notes",
+            "",
+            "- v23-MCP day-1 ship: plan_id is real and persistent under the session.",
+            "- Confidence labels: per-region ambiguous / inferred / visible (see manifest).",
+            "- Carve order: per block, ascending order_step. Kento marks added at CNC export.",
+        ]
+    )
     return "\n".join(lines) + "\n"
 
 

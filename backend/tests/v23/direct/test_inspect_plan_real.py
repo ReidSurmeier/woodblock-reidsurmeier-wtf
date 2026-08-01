@@ -1,11 +1,11 @@
 """D12.b RED — inspect_plan real artifact generation."""
+
 from __future__ import annotations
 
 import io
 from pathlib import Path
 
 import numpy as np
-import pytest
 from PIL import Image
 
 
@@ -14,6 +14,7 @@ def _isolate(monkeypatch, tmp_path: Path) -> None:
     import importlib
 
     from backend.mcp import paths
+
     importlib.reload(paths)
 
 

@@ -5,6 +5,7 @@ image and asks for a print plan. Canonical tool sequence:
 
     analyze_image → propose_stack → inspect_plan → export_print_plan
 """
+
 from __future__ import annotations
 
 import importlib
@@ -21,18 +22,20 @@ EXPECTED_FLOW: tuple[str, ...] = (
 def _isolate(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
     from backend.mcp import paths
+
     importlib.reload(paths)
     from backend.services.v23 import session as _sess
+
     importlib.reload(_sess)
     from backend.services.v23 import orchestrator as _orch
+
     importlib.reload(_orch)
 
 
 def test_pattern_a_cold_start_flow(mock_opus, monkeypatch, tmp_path: Path) -> None:
     _isolate(monkeypatch, tmp_path)
     image_path = (
-        "/home/reidsurmeier/src/woodblock-reidsurmeier-wtf/"
-        "corpus/reid_untitled_01/original.png"
+        "/home/reidsurmeier/src/woodblock-reidsurmeier-wtf/corpus/reid_untitled_01/original.png"
     )
 
     analyze = mock_opus.step("analyze_image", {"path": image_path})

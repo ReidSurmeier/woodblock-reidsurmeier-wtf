@@ -18,6 +18,7 @@ Pipeline:
    worsens ΔE by more than ``de_regression_guard`` it REJECTS the
    repair and returns the original alpha_stack.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -99,11 +100,16 @@ def morph_repair_stack(
     for i in range(m):
         mask = alpha_stack[i] >= vis_threshold
         # Remove tiny islands
-        opened = morphology.remove_small_objects(mask, min_size=int(min_island_px))
+        # scikit-image's current ``max_size`` boundary removes components
+        # smaller than or equal to the value. Subtract one to preserve the
+        # existing contract: remove islands strictly smaller than
+        # ``min_island_px``.
+        max_tiny_size = max(int(min_island_px) - 1, 0)
+        opened = morphology.remove_small_objects(mask, max_size=max_tiny_size)
         # Fill small holes + dilate for registration tolerance
         if close_radius > 0:
             footprint = morphology.disk(int(close_radius))
-            closed = morphology.binary_closing(opened, footprint=footprint)
+            closed = morphology.closing(opened, footprint=footprint)
         else:
             closed = opened
         # Preserve original alpha values inside the repaired mask. Pixels
@@ -127,10 +133,12 @@ def _forward_dE_proxy(
 ) -> float:
     """Compute mean RGB-space L2 ΔE proxy via the JAX forward render."""
     alpha_hwm = np.transpose(alpha_stack, (1, 2, 0))
-    rgb = np.asarray(forward_render_jax.forward_render(
-        jnp.asarray(alpha_hwm, dtype=jnp.float32),
-        jnp.asarray(pigment_idx, dtype=jnp.int32),
-    ))
+    rgb = np.asarray(
+        forward_render_jax.forward_render(
+            jnp.asarray(alpha_hwm, dtype=jnp.float32),
+            jnp.asarray(pigment_idx, dtype=jnp.int32),
+        )
+    )
     diff = rgb - target_rgb
     return float(np.sqrt(np.mean(diff * diff)) * 255.0 * 0.1)  # rough scale
 

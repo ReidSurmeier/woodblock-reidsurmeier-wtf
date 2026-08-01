@@ -7,21 +7,22 @@ Opus reads ``WoodblockError`` returns. ``retry_with`` carries concrete
 parameter overrides Opus can pass into the next tool call. ``recoverable``
 controls whether Opus offers a retry or relays terminally.
 """
+
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Generic, Literal, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ErrorTier(str, Enum):
+class ErrorTier(StrEnum):
     """4-tier error taxonomy (addendum-v2 §error-surface)."""
 
-    REFUSAL = "refusal"      # input invalid; Opus asks for a different input
-    WARN = "warn"            # non-blocking annotation
-    DEGRADED = "degraded"    # partial result shipped; Opus may retry/escalate
-    FAIL = "fail"            # hard failure; Opus relays diagnostic terminally
+    REFUSAL = "refusal"  # input invalid; Opus asks for a different input
+    WARN = "warn"  # non-blocking annotation
+    DEGRADED = "degraded"  # partial result shipped; Opus may retry/escalate
+    FAIL = "fail"  # hard failure; Opus relays diagnostic terminally
 
 
 ErrorTierLiteral = Literal["refusal", "warn", "degraded", "fail"]

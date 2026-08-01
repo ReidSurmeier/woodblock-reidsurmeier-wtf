@@ -26,8 +26,9 @@ dependencies = [
 [project.optional-dependencies]
 mcp = ["fastmcp>=2.0"]
 solver = ["jax[cuda13]>=0.10.0", "jaxopt>=0.8", "mixbox>=2.0", "colour-science>=0.4.4"]
+solver-cpu = ["jax>=0.10.0", "jaxopt>=0.8", "mixbox>=2.0", "colour-science>=0.4.4"]
 io = ["opencv-contrib-python>=4.10", "scikit-image>=0.24"]
-dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "mypy>=1.10", "ruff>=0.5"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "mypy>=1.10", "ruff==0.15.20"]
 
 [project.scripts]
 woodblock-mcp = "backend.mcp.v23_server:main"
@@ -41,3 +42,8 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+markers = [
+    "solver: exercises JAX or the inverse solver and is excluded from the portable gate",
+]

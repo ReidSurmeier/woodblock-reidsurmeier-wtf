@@ -6,6 +6,7 @@ Calls the v20 ``/api/sam`` HTTP endpoint via
 ``~/.woodblock/v23/cache/sam/<sha>/``, and caches the full result so
 repeat calls on the same ``image_sha256`` skip the HTTP round trip.
 """
+
 from __future__ import annotations
 
 import base64

@@ -83,7 +83,6 @@ export default function ProgressBar({
     } else {
       if (iv.current) clearInterval(iv.current);
       iv.current = null;
-      setStalled(false);
     }
     return () => { if (iv.current) clearInterval(iv.current); };
   }, [isLoading]);
@@ -128,7 +127,7 @@ export default function ProgressBar({
     eta = `~${fmt(left)} left`;
   }
 
-  const isIndeterminate = (pct === 0 && isLoading) || stalled;
+  const isIndeterminate = (pct === 0 && isLoading) || (isLoading && stalled);
 
   return (
     <div

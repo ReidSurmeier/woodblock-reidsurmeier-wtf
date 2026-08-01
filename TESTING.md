@@ -1,83 +1,120 @@
-# Color Separator — Test Suite
+# Woodblock MCP testing
 
-## Structure
+The repository has two validation boundaries. The portable gate is required on
+every pull request. The complete solver-bearing suite is a separate local/GPU
+gate and must be reported with its actual backend, runtime, skips, and timeout.
 
-```
-e2e/
-  fixtures.ts          — shared helpers (upload, wait, timing)
-  color-separator.spec.ts — 6 core criteria + error handling
-  no-auth-gate.spec.ts — auth gate regression test
-backend/tests/
-  test_performance.py  — backend API performance + correctness
-playwright.config.ts   — Playwright configuration
-TESTING.md             — this file
-```
+## Environment
 
-## Prerequisites
+Python 3.11 and 3.12 are supported. Create a disposable environment and install
+the CPU validation extras:
 
-### Frontend (Playwright)
 ```bash
-# From project root (C:\colorsep on Windows)
-npm install
-npx playwright install chromium
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[mcp,io,solver-cpu,dev]"
 ```
 
-### Backend (pytest)
+The `solver` extra installs the CUDA 13 JAX stack for a compatible Pugnet GPU
+environment. The `solver-cpu` extra is the portable CI boundary. Do not install
+both to imply that the CPU gate validates GPU behavior.
+
+## Red-green-refactor
+
+For each change:
+
+1. add one focused test;
+2. run it and retain the expected red output in the working notes;
+3. implement the smallest change;
+4. rerun the focused test;
+5. run the relevant ring; and
+6. run the complete applicable gate before merge.
+
+Repository and documentation contracts live under `tests/`. Product tests live
+under `backend/tests/v23/` and are grouped by scaffold, unit, stage, direct MCP,
+transport, conversation, solver-smoke, and corpus rings.
+
+## Required portable gate
+
 ```bash
-# Inside backend container or with backend virtualenv
-pip install pytest requests
+python -m unittest tests.test_repository_contract -v
+
+ruff check backend/mcp backend/services/v23 backend/tests/v23 tests
+
+WOODBLOCK_HOME="$(mktemp -d)" \
+  python -m pytest \
+  backend/tests/v23/scaffold \
+  backend/tests/v23/unit \
+  -m "not solver" \
+  -q
+
+python -m compileall -q backend tests
 ```
 
-## Running Tests
+The GitHub workflow pins Ruff 0.15.20 and runs this gate on Python 3.11 and
+3.12. A solver-marked test is excluded only from the portable job; it remains
+part of the complete suite.
 
-### E2E Tests (Playwright)
+## Complete solver-bearing gate
+
+Use a fresh plan root and state the observed JAX backend:
+
 ```bash
-# Run all E2E tests against live site
-npx playwright test
+python - <<'PY'
+import jax
 
-# Run specific spec
-npx playwright test e2e/color-separator.spec.ts
+print(jax.__version__)
+print(jax.default_backend())
+print(jax.devices())
+PY
 
-# Run with headed browser (debug)
-npx playwright test --headed
-
-# Run against local dev
-BASE_URL=http://localhost:3000 npx playwright test
+validation_root="$(mktemp -d)"
+WOODBLOCK_HOME="$validation_root" \
+  timeout 900 python -m pytest backend/tests/v23 -q --tb=line
+find "$validation_root" -depth -delete
 ```
 
-### Backend Tests (pytest)
+The pre-tracer handoff command used a 300-second timeout and reached only part
+of the 297-test collection. The repair reused one expensive HITL plan pair
+within its module instead of rebuilding it for every assertion. On 2026-07-31
+the complete gate then reported 279 passed and 18 skipped in 224.94 seconds
+(229.97 seconds wall-clock) with JAX 0.10.0 on one CUDA device.
+
+The ring split remains useful evidence: direct MCP took 140.52 seconds, stages
+67.40 seconds, transport/conversation/corpus 4.28 seconds, and solver-smoke
+7.23 seconds. Preserve the 900-second outer bound and continue reporting actual
+backend, skips, and runtime.
+
+The corpus gate may require media that is intentionally absent from a clean
+checkout. Missing private media should be an explicit skip or refusal, never a
+download from an undocumented location.
+
+## Inherited review frontend
+
+The Next.js package is retained as an inherited review frontend, not as the
+MCP product or an active deployment. Validate changes to that surface with:
+
 ```bash
-# From project root, hitting local backend
-pytest backend/tests/ -v
-
-# Hit different backend URL
-BACKEND_URL=http://localhost:8001 pytest backend/tests/ -v
+npm ci
+npm run check
 ```
 
-### Full Suite
-```bash
-npx playwright test && pytest backend/tests/ -v
-```
+Playwright tests require an explicitly started local frontend and backend.
+They must not target the public Color Separator application as evidence for
+this repository.
 
-## Success Criteria Map
+## Live checks
 
-| # | Criterion | Test |
-|---|-----------|------|
-| 1 | Upload → composite → plates → zip download | `color-separator.spec.ts` test 2 + 5 |
-| 2 | Plates appear concurrently (≤2s after composite) | `color-separator.spec.ts` test 3 |
-| 3 | Progress bar visible and tracks stages | `color-separator.spec.ts` test 4 |
-| 4 | v20 backend ≤30s cached / ≤45s cold | `color-separator.spec.ts` test 6 + `test_performance.py` |
-| 5 | ZIP download contains plates | `color-separator.spec.ts` test 5 + `test_performance.py` |
-| 6 | Zero console errors | `color-separator.spec.ts` test 2 |
+Live Pugnet, Tailscale, Docker, and Droplet checks are read-only unless a task
+owns an explicit deployment plan. Verify separately:
 
-## Expected Initial State (Red)
+- container process health;
+- published host ports;
+- Docker network attachment;
+- Tailscale Serve ownership;
+- GitHub Pages and deployment records; and
+- Droplet Runtime Component ownership.
 
-All tests should initially FAIL to validate they're testing real behavior:
-- Timing tests may fail if backend is cold or overloaded
-- Download test may fail if processing doesn't complete
-- Progress bar test depends on actual SSE streaming working
-
-After fixes, re-run 3x to confirm zero flakiness:
-```bash
-for i in 1 2 3; do npx playwright test && echo "PASS $i" || echo "FAIL $i"; done
-```
+An internally responsive legacy container without a route, release identity,
+and rollback packet is not a deployment.

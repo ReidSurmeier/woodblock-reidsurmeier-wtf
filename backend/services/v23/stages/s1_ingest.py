@@ -6,6 +6,7 @@ the active session (auto-creating one if none exists).
 
 Returns ImageHandle. Downstream stages key off ``handle.image_sha256``.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -97,7 +98,10 @@ def ingest_reference_image(path: str | Path) -> ImageHandle:
             WoodblockError(
                 tier="refusal",
                 code="INPUT_TOO_LARGE",
-                message=f"Image too large. Resize below 12 megapixels and try again. (got {mpx:.1f} Mpx)",
+                message=(
+                    "Image too large. Resize below 12 megapixels and try again. "
+                    f"(got {mpx:.1f} Mpx)"
+                ),
                 hint="downscale the long edge so width × height ≤ 12 million pixels",
                 recoverable=True,
                 context={"mpx": round(mpx, 2), "width": raw.width, "height": raw.height},

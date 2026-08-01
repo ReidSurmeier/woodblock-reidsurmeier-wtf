@@ -16,6 +16,7 @@ etc.) and never a ``subject_label``. :func:`suggest_template` ranks the
 three templates by how well measurable evidence matches each, but Opus
 is free to override the suggestion in ``propose_stack(strategy_template=…)``.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -23,7 +24,13 @@ from typing import Literal
 
 TemplateId = Literal["portrait_emma", "landscape", "high_chroma_graphic"]
 HueFamily = Literal[
-    "cream", "cool", "flesh", "warm", "shadow", "detail", "accent",
+    "cream",
+    "cool",
+    "flesh",
+    "warm",
+    "shadow",
+    "detail",
+    "accent",
 ]
 
 
@@ -61,12 +68,33 @@ _PORTRAIT_EMMA = StrategyTemplate(
     template_id="portrait_emma",
     name="Portrait (Emma-style)",
     slots=(
-        TemplateSlot(family="cream", role="paper-warmed base", expected_okL=0.92, expected_area_pct=18.0),
-        TemplateSlot(family="cool", role="under-shadow + hair-edge support", expected_okL=0.78, expected_area_pct=15.0),
-        TemplateSlot(family="flesh", role="face midtones field", expected_okL=0.72, expected_area_pct=24.0),
-        TemplateSlot(family="warm", role="cheeks / lips / eye-corner accents", expected_okL=0.58, expected_area_pct=12.0),
-        TemplateSlot(family="shadow", role="shadow-side teal", expected_okL=0.42, expected_area_pct=10.0),
-        TemplateSlot(family="detail", role="hair / eyes / mouth / nose lines", expected_okL=0.18, expected_area_pct=8.0),
+        TemplateSlot(
+            family="cream", role="paper-warmed base", expected_okL=0.92, expected_area_pct=18.0
+        ),
+        TemplateSlot(
+            family="cool",
+            role="under-shadow + hair-edge support",
+            expected_okL=0.78,
+            expected_area_pct=15.0,
+        ),
+        TemplateSlot(
+            family="flesh", role="face midtones field", expected_okL=0.72, expected_area_pct=24.0
+        ),
+        TemplateSlot(
+            family="warm",
+            role="cheeks / lips / eye-corner accents",
+            expected_okL=0.58,
+            expected_area_pct=12.0,
+        ),
+        TemplateSlot(
+            family="shadow", role="shadow-side teal", expected_okL=0.42, expected_area_pct=10.0
+        ),
+        TemplateSlot(
+            family="detail",
+            role="hair / eyes / mouth / nose lines",
+            expected_okL=0.18,
+            expected_area_pct=8.0,
+        ),
     ),
 )
 
@@ -75,11 +103,17 @@ _LANDSCAPE = StrategyTemplate(
     template_id="landscape",
     name="Landscape",
     slots=(
-        TemplateSlot(family="cream", role="paper / cream reserve", expected_okL=0.93, expected_area_pct=12.0),
+        TemplateSlot(
+            family="cream", role="paper / cream reserve", expected_okL=0.93, expected_area_pct=12.0
+        ),
         TemplateSlot(family="cool", role="sky cool", expected_okL=0.78, expected_area_pct=22.0),
-        TemplateSlot(family="shadow", role="foliage green", expected_okL=0.50, expected_area_pct=24.0),
+        TemplateSlot(
+            family="shadow", role="foliage green", expected_okL=0.50, expected_area_pct=24.0
+        ),
         TemplateSlot(family="warm", role="warm earth", expected_okL=0.55, expected_area_pct=18.0),
-        TemplateSlot(family="shadow", role="ground shadow", expected_okL=0.35, expected_area_pct=12.0),
+        TemplateSlot(
+            family="shadow", role="ground shadow", expected_okL=0.35, expected_area_pct=12.0
+        ),
         TemplateSlot(family="detail", role="key detail", expected_okL=0.18, expected_area_pct=6.0),
     ),
 )
@@ -89,9 +123,13 @@ _HIGH_CHROMA = StrategyTemplate(
     template_id="high_chroma_graphic",
     name="High-chroma graphic",
     slots=(
-        TemplateSlot(family="cream", role="base support", expected_okL=0.90, expected_area_pct=10.0),
+        TemplateSlot(
+            family="cream", role="base support", expected_okL=0.90, expected_area_pct=10.0
+        ),
         TemplateSlot(family="warm", role="dominant hue", expected_okL=0.65, expected_area_pct=40.0),
-        TemplateSlot(family="cool", role="complement shadow", expected_okL=0.55, expected_area_pct=15.0),
+        TemplateSlot(
+            family="cool", role="complement shadow", expected_okL=0.55, expected_area_pct=15.0
+        ),
         TemplateSlot(family="accent", role="accent pop", expected_okL=0.50, expected_area_pct=18.0),
         TemplateSlot(family="detail", role="dark key", expected_okL=0.15, expected_area_pct=8.0),
     ),
@@ -144,9 +182,7 @@ def pick_template_hints(*, family_areas: dict[str, float]) -> dict[str, float | 
         "cool_area_pct": float(family_areas.get("cool", 0.0) * 100.0),
         "warm_area_pct": float(family_areas.get("warm", 0.0) * 100.0),
         "shadow_area_pct": float(family_areas.get("shadow", 0.0) * 100.0),
-        "family_count_above_10pct": int(
-            sum(1 for v in family_areas.values() if v > 0.10)
-        ),
+        "family_count_above_10pct": int(sum(1 for v in family_areas.values() if v > 0.10)),
     }
 
 
@@ -159,7 +195,6 @@ def suggest_template(*, family_areas: dict[str, float]) -> TemplateSuggestion:
     """
     flesh = family_areas.get("flesh", 0.0)
     cool = family_areas.get("cool", 0.0)
-    warm = family_areas.get("warm", 0.0)
     blue_green = cool + family_areas.get("shadow", 0.0)
     max_area = max(family_areas.values()) if family_areas else 0.0
     n_families = sum(1 for v in family_areas.values() if v > 0.10)

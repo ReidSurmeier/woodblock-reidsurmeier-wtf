@@ -18,6 +18,7 @@ Per addendum-v4 — this is Tier-1 (t1_mixbox) of the 3-tier render
 hierarchy. Models palette MIXING, NOT overprint glazing. Honest output
 includes the "as if pre-mixed" qualifier per WB-LANG-02 lint.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -32,24 +33,24 @@ from numpy.typing import NDArray
 # stays self-contained and JAX-traceable without importing palette_extract.
 PIGMENT_RGB_255: NDArray[np.uint8] = np.array(
     [
-        (254, 236, 0),    # 0  cadmium_yellow
-        (252, 211, 0),    # 1  hansa_yellow
-        (252, 102, 16),   # 2  cadmium_orange
-        (227, 38, 54),    # 3  cadmium_red
-        (199, 21, 133),   # 4  quinacridone_magenta
-        (102, 51, 153),   # 5  cobalt_violet
-        (33, 41, 165),    # 6  ultramarine_blue
-        (0, 71, 171),     # 7  cobalt_blue
-        (0, 102, 102),    # 8  viridian_green
-        (62, 96, 56),     # 9  forest_green
-        (139, 69, 19),    # 10 burnt_sienna
-        (51, 25, 0),      # 11 raw_umber
-        (15, 15, 15),     # 12 ivory_black
+        (254, 236, 0),  # 0  cadmium_yellow
+        (252, 211, 0),  # 1  hansa_yellow
+        (252, 102, 16),  # 2  cadmium_orange
+        (227, 38, 54),  # 3  cadmium_red
+        (199, 21, 133),  # 4  quinacridone_magenta
+        (102, 51, 153),  # 5  cobalt_violet
+        (33, 41, 165),  # 6  ultramarine_blue
+        (0, 71, 171),  # 7  cobalt_blue
+        (0, 102, 102),  # 8  viridian_green
+        (62, 96, 56),  # 9  forest_green
+        (139, 69, 19),  # 10 burnt_sienna
+        (51, 25, 0),  # 11 raw_umber
+        (15, 15, 15),  # 12 ivory_black
     ],
     dtype=np.uint8,
 )
 
-PIGMENT_TABLE: NDArray[np.float32] = (PIGMENT_RGB_255.astype(np.float32) / 255.0)
+PIGMENT_TABLE: NDArray[np.float32] = PIGMENT_RGB_255.astype(np.float32) / 255.0
 
 # Washi-paper substrate. Slight warm cream (~ #f6f1e3) — matches the
 # `paper` Oklab anchor in the v23 plan §7 + addendum-v4.

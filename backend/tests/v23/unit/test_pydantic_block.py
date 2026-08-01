@@ -1,9 +1,11 @@
 """D2.1 RED — Block + Pigment Pydantic round-trip."""
+
 from __future__ import annotations
 
 import json
 
 import pytest
+from pydantic import ValidationError
 
 
 def test_pigment_round_trips_through_json() -> None:
@@ -28,9 +30,12 @@ def test_pigment_round_trips_through_json() -> None:
 def test_pigment_rejects_invalid_family() -> None:
     from backend.services.v23.types import Pigment
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         Pigment(
-            id="x", name="x", rgb=(0, 0, 0), hex="#000000",
+            id="x",
+            name="x",
+            rgb=(0, 0, 0),
+            hex="#000000",
             family="not_a_family",  # type: ignore[arg-type]
             density=0.5,
         )
@@ -39,10 +44,14 @@ def test_pigment_rejects_invalid_family() -> None:
 def test_pigment_rejects_invalid_calibration_source() -> None:
     from backend.services.v23.types import Pigment
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         Pigment(
-            id="x", name="x", rgb=(0, 0, 0), hex="#000000",
-            family="cool", density=0.5,
+            id="x",
+            name="x",
+            rgb=(0, 0, 0),
+            hex="#000000",
+            family="cool",
+            density=0.5,
             calibration_source="hand_picked",  # regex mismatch
         )
 
@@ -51,7 +60,7 @@ def test_pigment_is_frozen() -> None:
     from backend.services.v23.types import Pigment
 
     p = Pigment(id="x", name="x", rgb=(0, 0, 0), hex="#000000", family="cool", density=0.5)
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         p.id = "y"  # type: ignore[misc]
 
 
@@ -81,7 +90,8 @@ def test_block_defaults_to_maple_plywood() -> None:
     b = Block(
         id="blk_00",
         face_ids=("blk_00::face_a",),
-        sheet_w_mm=300.0, sheet_h_mm=400.0,
+        sheet_w_mm=300.0,
+        sheet_h_mm=400.0,
         impression_ids=(),
         dsatur_color=0,
     )

@@ -10,6 +10,7 @@ upgrade lands when ColorChecker ArUco detection ships (deferred).
 
 apply / list / inspect: file-backed (already real pre-session).
 """
+
 from __future__ import annotations
 
 import json
@@ -22,7 +23,8 @@ from PIL import Image
 
 from backend.mcp import paths
 from backend.mcp.errors import ToolResult, WoodblockError
-from backend.services.v23.core import color as _color, forward_render_jax as _fr
+from backend.services.v23.core import color as _color
+from backend.services.v23.core import forward_render_jax as _fr
 
 
 def _calibrations_dir() -> Path:
@@ -41,19 +43,31 @@ def _validate_layout(layout: dict[str, Any]) -> dict[str, Any] | WoodblockError:
     missing = [k for k in required if k not in layout]
     if missing:
         return WoodblockError(
-            tier="refusal", code="INVALID_LAYOUT",
+            tier="refusal",
+            code="INVALID_LAYOUT",
             message=f"layout missing keys: {missing}",
             hint="layout = {origin_xy:[x,y], cell_px:[w,h], rows:int, cols:int}",
             recoverable=True,
         )
-    if not (isinstance(layout["rows"], int) and isinstance(layout["cols"], int)
-            and layout["rows"] > 0 and layout["cols"] > 0):
-        return WoodblockError(tier="refusal", code="INVALID_LAYOUT",
-                              message="rows + cols must be positive ints", recoverable=True)
+    if not (
+        isinstance(layout["rows"], int)
+        and isinstance(layout["cols"], int)
+        and layout["rows"] > 0
+        and layout["cols"] > 0
+    ):
+        return WoodblockError(
+            tier="refusal",
+            code="INVALID_LAYOUT",
+            message="rows + cols must be positive ints",
+            recoverable=True,
+        )
     if not (len(layout["origin_xy"]) == 2 and len(layout["cell_px"]) == 2):
-        return WoodblockError(tier="refusal", code="INVALID_LAYOUT",
-                              message="origin_xy + cell_px must each be [int, int]",
-                              recoverable=True)
+        return WoodblockError(
+            tier="refusal",
+            code="INVALID_LAYOUT",
+            message="origin_xy + cell_px must each be [int, int]",
+            recoverable=True,
+        )
     return layout
 
 
@@ -72,11 +86,18 @@ def capture_swatch(
     truth per cell in row-major order. Missing patches drop to "unknown".
     """
     if not Path(swatch_image_path).is_file():
-        return ToolResult(ok=False, data=None, errors=[
-            WoodblockError(tier="refusal", code="SWATCH_FILE_MISSING",
-                           message=f"swatch image not found: {swatch_image_path}",
-                           recoverable=True),
-        ])
+        return ToolResult(
+            ok=False,
+            data=None,
+            errors=[
+                WoodblockError(
+                    tier="refusal",
+                    code="SWATCH_FILE_MISSING",
+                    message=f"swatch image not found: {swatch_image_path}",
+                    recoverable=True,
+                ),
+            ],
+        )
 
     lay = _validate_layout(layout)
     if isinstance(lay, WoodblockError):
@@ -112,25 +133,35 @@ def capture_swatch(
                 if idx < len(patches_truth) and isinstance(patches_truth[idx], dict)
                 else f"row{r}col{c}"
             )
-            detected.append({
-                "patch_id": f"r{r}c{c}",
-                "name": truth_name,
-                "mean_rgb": [round(float(v), 4) for v in mean_rgb],
-                "mean_lab": [round(float(v), 3) for v in mean_lab],
-                "expected_lab": truth_lab,
-                "dE_to_expected": (
-                    round(float(_color.delta_e76(mean_lab, np.asarray(truth_lab))), 3)
-                    if truth_lab is not None else None
-                ),
-            })
+            detected.append(
+                {
+                    "patch_id": f"r{r}c{c}",
+                    "name": truth_name,
+                    "mean_rgb": [round(float(v), 4) for v in mean_rgb],
+                    "mean_lab": [round(float(v), 3) for v in mean_lab],
+                    "expected_lab": truth_lab,
+                    "dE_to_expected": (
+                        round(float(_color.delta_e76(mean_lab, np.asarray(truth_lab))), 3)
+                        if truth_lab is not None
+                        else None
+                    ),
+                }
+            )
 
     if not detected:
-        return ToolResult(ok=False, data=None, errors=[
-            WoodblockError(tier="refusal", code="NO_PATCHES_DETECTED",
-                           message="all swatch cells fell outside image bounds",
-                           hint=f"check layout origin_xy + cell_px vs image {w}x{h}",
-                           recoverable=True),
-        ])
+        return ToolResult(
+            ok=False,
+            data=None,
+            errors=[
+                WoodblockError(
+                    tier="refusal",
+                    code="NO_PATCHES_DETECTED",
+                    message="all swatch cells fell outside image bounds",
+                    hint=f"check layout origin_xy + cell_px vs image {w}x{h}",
+                    recoverable=True,
+                ),
+            ],
+        )
 
     candidate_id = f"cal_candidate_{Path(swatch_image_path).stem}_{int(time.time())}"
     payload = {
@@ -159,31 +190,56 @@ def fit_pigments(candidate_id: str) -> ToolResult[dict[str, Any]]:
     """
     cand_file = _calibrations_dir() / f"{candidate_id}.json"
     if not cand_file.is_file():
-        return ToolResult(ok=False, data=None, errors=[
-            WoodblockError(tier="refusal", code="CANDIDATE_NOT_FOUND",
-                           message=f"candidate {candidate_id!r} not found",
-                           hint="call capture_swatch first", recoverable=True),
-        ])
+        return ToolResult(
+            ok=False,
+            data=None,
+            errors=[
+                WoodblockError(
+                    tier="refusal",
+                    code="CANDIDATE_NOT_FOUND",
+                    message=f"candidate {candidate_id!r} not found",
+                    hint="call capture_swatch first",
+                    recoverable=True,
+                ),
+            ],
+        )
     candidate = json.loads(cand_file.read_text())
     patches = candidate.get("patches", [])
     if not patches:
-        return ToolResult(ok=False, data=None, errors=[
-            WoodblockError(tier="refusal", code="EMPTY_CANDIDATE",
-                           message=f"candidate {candidate_id!r} has no patches",
-                           recoverable=True),
-        ])
+        return ToolResult(
+            ok=False,
+            data=None,
+            errors=[
+                WoodblockError(
+                    tier="refusal",
+                    code="EMPTY_CANDIDATE",
+                    message=f"candidate {candidate_id!r} has no patches",
+                    recoverable=True,
+                ),
+            ],
+        )
 
     patch_labs = np.asarray(
-        [p["mean_lab"] for p in patches], dtype=np.float32,
+        [p["mean_lab"] for p in patches],
+        dtype=np.float32,
     )  # (P, 3)
     pigment_rgb = _fr.PIGMENT_TABLE  # (13, 3) in [0, 1]
     pigment_lab = _color.srgb_to_lab(pigment_rgb)  # (13, 3)
 
     pigment_names = [
-        "cadmium_yellow", "hansa_yellow", "cadmium_orange", "cadmium_red",
-        "quinacridone_magenta", "cobalt_violet", "ultramarine_blue",
-        "cobalt_blue", "viridian_green", "forest_green",
-        "burnt_sienna", "raw_umber", "ivory_black",
+        "cadmium_yellow",
+        "hansa_yellow",
+        "cadmium_orange",
+        "cadmium_red",
+        "quinacridone_magenta",
+        "cobalt_violet",
+        "ultramarine_blue",
+        "cobalt_blue",
+        "viridian_green",
+        "forest_green",
+        "burnt_sienna",
+        "raw_umber",
+        "ivory_black",
     ]
 
     fits = []
@@ -197,14 +253,16 @@ def fit_pigments(candidate_id: str) -> ToolResult[dict[str, Any]]:
         best_idx = int(np.argmin(dE_per_patch))
         best_dE = float(dE_per_patch[best_idx])
         delta_lab = (patch_labs[best_idx] - pigment_lab[i]).tolist()
-        fits.append({
-            "pigment_id": i,
-            "pigment_name": name,
-            "matched_patch": patches[best_idx]["patch_id"],
-            "matched_patch_name": patches[best_idx].get("name"),
-            "delta_lab": [round(float(v), 3) for v in delta_lab],
-            "pre_fit_dE": round(best_dE, 3),
-        })
+        fits.append(
+            {
+                "pigment_id": i,
+                "pigment_name": name,
+                "matched_patch": patches[best_idx]["patch_id"],
+                "matched_patch_name": patches[best_idx].get("name"),
+                "delta_lab": [round(float(v), 3) for v in delta_lab],
+                "pre_fit_dE": round(best_dE, 3),
+            }
+        )
         fit_dEs.append(best_dE)
 
     calibration_id = candidate_id.replace("cal_candidate_", "cal_fitted_")
@@ -229,18 +287,28 @@ def apply_calibration(calibration_id: str) -> ToolResult[dict[str, Any]]:
     previous = state_file.read_text().strip() if state_file.is_file() else "generic_mixbox_13"
     cal_file = _calibrations_dir() / f"{calibration_id}.json"
     if not cal_file.is_file() and calibration_id != "generic_mixbox_13":
-        return ToolResult(ok=False, data=None, errors=[
-            WoodblockError(tier="refusal", code="CALIBRATION_NOT_FOUND",
-                           message=f"calibration {calibration_id!r} not found",
-                           hint="call list_calibrations() to see available IDs",
-                           recoverable=True),
-        ])
+        return ToolResult(
+            ok=False,
+            data=None,
+            errors=[
+                WoodblockError(
+                    tier="refusal",
+                    code="CALIBRATION_NOT_FOUND",
+                    message=f"calibration {calibration_id!r} not found",
+                    hint="call list_calibrations() to see available IDs",
+                    recoverable=True,
+                ),
+            ],
+        )
     state_file.write_text(calibration_id)
-    return ToolResult(ok=True, data={
-        "calibration_id": calibration_id,
-        "applied": True,
-        "previous_calibration": previous,
-    })
+    return ToolResult(
+        ok=True,
+        data={
+            "calibration_id": calibration_id,
+            "applied": True,
+            "previous_calibration": previous,
+        },
+    )
 
 
 def list_calibrations() -> ToolResult[dict[str, Any]]:
@@ -249,14 +317,16 @@ def list_calibrations() -> ToolResult[dict[str, Any]]:
     for p in sorted(d.glob("*.json")):
         try:
             payload = json.loads(p.read_text())
-            entries.append({
-                "calibration_id": payload.get("calibration_id") or payload.get("candidate_id"),
-                "kind": "fitted" if "calibration_id" in payload else "candidate",
-                "pigments_fitted": payload.get("pigments_fitted"),
-                "swatch_fit_dE_median": payload.get("swatch_fit_dE_median"),
-                "fitted_at": payload.get("fitted_at"),
-                "captured_at": payload.get("captured_at"),
-            })
+            entries.append(
+                {
+                    "calibration_id": payload.get("calibration_id") or payload.get("candidate_id"),
+                    "kind": "fitted" if "calibration_id" in payload else "candidate",
+                    "pigments_fitted": payload.get("pigments_fitted"),
+                    "swatch_fit_dE_median": payload.get("swatch_fit_dE_median"),
+                    "fitted_at": payload.get("fitted_at"),
+                    "captured_at": payload.get("captured_at"),
+                }
+            )
         except json.JSONDecodeError:
             continue
     active_file = paths.WB_DATA_DIR / "active_calibration"
@@ -267,16 +337,26 @@ def list_calibrations() -> ToolResult[dict[str, Any]]:
 def inspect_calibration(calibration_id: str) -> ToolResult[dict[str, Any]]:
     f = _calibrations_dir() / f"{calibration_id}.json"
     if not f.is_file():
-        return ToolResult(ok=False, data=None, errors=[
-            WoodblockError(tier="refusal", code="CALIBRATION_NOT_FOUND",
-                           message=f"calibration {calibration_id!r} not found",
-                           hint="call list_calibrations() to see what's available",
-                           recoverable=True),
-        ])
+        return ToolResult(
+            ok=False,
+            data=None,
+            errors=[
+                WoodblockError(
+                    tier="refusal",
+                    code="CALIBRATION_NOT_FOUND",
+                    message=f"calibration {calibration_id!r} not found",
+                    hint="call list_calibrations() to see what's available",
+                    recoverable=True,
+                ),
+            ],
+        )
     return ToolResult(ok=True, data=json.loads(f.read_text()))
 
 
 __all__ = [
-    "capture_swatch", "fit_pigments", "apply_calibration",
-    "list_calibrations", "inspect_calibration",
+    "capture_swatch",
+    "fit_pigments",
+    "apply_calibration",
+    "list_calibrations",
+    "inspect_calibration",
 ]

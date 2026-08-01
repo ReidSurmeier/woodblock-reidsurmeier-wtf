@@ -406,7 +406,6 @@ export function useCncProcessor() {
       let totalNodesBefore = 0;
       let totalNodesAfter = 0;
       let totalKentoMarks = 0;
-      let totalEvenoddFixed = 0;
       let totalPathsClosed = 0;
       let totalSupportIslands = 0;
       let totalCompensatedPaths = 0;
@@ -423,8 +422,7 @@ export function useCncProcessor() {
         totalBoundariesRemoved += removed;
 
         // 2. Fix evenodd paths (VCarve doesn't handle evenodd fill-rule)
-        const { fixed: evenoddFixed, evenoddFixed: evenoddCount } = fixEvenOddPaths(cleaned);
-        totalEvenoddFixed += evenoddCount;
+        const { fixed: evenoddFixed } = fixEvenOddPaths(cleaned);
 
         // 3. Close open paths (VCarve needs closed vectors)
         const { closed, pathsClosed } = closeOpenPaths(evenoddFixed);

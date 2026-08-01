@@ -1,4 +1,5 @@
 """D14.n — export_svg + export_block_svgs + generate_carve_order real."""
+
 from __future__ import annotations
 
 import importlib
@@ -12,10 +13,13 @@ from PIL import Image
 def _isolate(monkeypatch, tmp_path: Path) -> None:
     monkeypatch.setenv("WOODBLOCK_HOME", str(tmp_path))
     from backend.mcp import paths
+
     importlib.reload(paths)
     from backend.services.v23 import session as _sess
+
     importlib.reload(_sess)
     from backend.services.v23 import orchestrator as _orch
+
     importlib.reload(_orch)
 
 
@@ -29,6 +33,7 @@ def real_plan(tmp_path: Path, monkeypatch):
     img_path = tmp_path / "tiny.png"
     Image.fromarray(arr, "RGB").save(img_path)
     from backend.services.v23 import orchestrator as _orch
+
     return _orch.run_pipeline_partial(str(img_path), solve_profile="fast")
 
 
@@ -36,6 +41,7 @@ def test_export_svg_all_impressions_real(real_plan) -> None:
     if not real_plan.impressions:
         pytest.skip("solver produced 0 impressions")
     from backend.mcp.tools import carve
+
     r = carve.export_svg(real_plan.plan_id)
     assert r.ok is True, r.errors
     assert r.data["vectoriser"] == "skimage_marching_squares_v1"
@@ -51,6 +57,7 @@ def test_export_svg_specific_impression_real(real_plan) -> None:
         pytest.skip("solver produced 0 impressions")
     iid = real_plan.impressions[0]["id"]
     from backend.mcp.tools import carve
+
     r = carve.export_svg(real_plan.plan_id, impression_ids=[iid])
     assert r.ok is True, r.errors
     assert len(r.data["svg_paths"]) == 1
@@ -59,6 +66,7 @@ def test_export_svg_specific_impression_real(real_plan) -> None:
 
 def test_export_svg_unknown_id_refuses(real_plan) -> None:
     from backend.mcp.tools import carve
+
     r = carve.export_svg(real_plan.plan_id, impression_ids=["imp_does_not_exist"])
     assert r.ok is False
     assert r.errors[0].code == "UNKNOWN_IMPRESSION_ID"
@@ -68,6 +76,7 @@ def test_export_block_svgs_real(real_plan) -> None:
     if real_plan.block_count == 0:
         pytest.skip("S7 did not pack blocks")
     from backend.mcp.tools import carve
+
     r = carve.export_block_svgs(real_plan.plan_id)
     assert r.ok is True, r.errors
     assert r.data["block_count"] == real_plan.block_count
@@ -81,6 +90,7 @@ def test_generate_carve_order_real(real_plan) -> None:
     if not real_plan.impressions:
         pytest.skip("solver produced 0 impressions")
     from backend.mcp.tools import carve
+
     r = carve.generate_carve_order(real_plan.plan_id)
     assert r.ok is True, r.errors
     assert r.data["step_count"] == len(real_plan.impressions)

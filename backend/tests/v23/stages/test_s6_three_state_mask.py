@@ -8,6 +8,7 @@ Bottom-up sweep over print order. Thresholds from interface contract B-5:
 - τ_cov = 0.50  — minimum α of a LATER impression that hides this one
 - τ_sup = 0.10  — minimum α for an impression to count as faint support
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -104,10 +105,13 @@ def test_classify_with_partial_overlap() -> None:
 def test_summary_stats_per_impression() -> None:
     from backend.services.v23.stages.s6_three_state_mask import summarise_states
 
-    state = np.array([
-        [[1, 1, 0, 0], [1, 1, 0, 0]],  # impression 0: 4 visible, 4 none
-        [[2, 2, 0, 0], [2, 2, 0, 0]],  # impression 1: 4 covered, 4 none
-    ], dtype=np.uint8)
+    state = np.array(
+        [
+            [[1, 1, 0, 0], [1, 1, 0, 0]],  # impression 0: 4 visible, 4 none
+            [[2, 2, 0, 0], [2, 2, 0, 0]],  # impression 1: 4 covered, 4 none
+        ],
+        dtype=np.uint8,
+    )
     summary = summarise_states(state)
     assert len(summary) == 2
     assert summary[0]["visible_pct"] == 50.0

@@ -6,6 +6,7 @@ component squared diffs). ΔE2000 lands when the corpus gate needs sub-1.0
 precision; for v23 ship-day, ΔE76 with sRGB→Lab D65 is the canonical pipeline
 metric and replaces the RGB-L2 proxy that the solver was previously emitting.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -68,5 +69,8 @@ def delta_e_summary(
 
 
 __all__ = [
-    "srgb_to_lab", "delta_e76", "rgb_delta_e76", "delta_e_summary",
+    "srgb_to_lab",
+    "delta_e76",
+    "rgb_delta_e76",
+    "delta_e_summary",
 ]

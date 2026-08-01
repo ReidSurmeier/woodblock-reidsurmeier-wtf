@@ -5,13 +5,13 @@ valid Pydantic + ToolResult[T]. Tools with backing implementation
 return real data; tools awaiting full solver return ``degraded`` tier
 ``IMPL_PENDING`` with hint pointing at the substep that lands real logic.
 """
+
 from __future__ import annotations
 
 import io
 from pathlib import Path
 
 import numpy as np
-import pytest
 from PIL import Image
 
 
@@ -32,6 +32,7 @@ def _isolate(monkeypatch, tmp_path: Path) -> None:
     import importlib
 
     from backend.mcp import paths
+
     importlib.reload(paths)
 
 
@@ -154,7 +155,7 @@ def test_score_stack_delta_e_returns_mean_p95(tmp_path: Path, monkeypatch) -> No
 
 
 def test_score_candidate_stack_returns_5_component_breakdown(tmp_path: Path, monkeypatch) -> None:
-    """Addendum-v3 fix 4: visual_match + carveability + simplicity + underprint_utility + template_fit."""
+    """Return the five scoring components required by addendum-v3 fix 4."""
     _isolate(monkeypatch, tmp_path)
     from backend.mcp.tools import core
 
@@ -185,7 +186,9 @@ def test_export_print_plan_returns_zip_and_recipe_paths(tmp_path: Path, monkeypa
     assert "recipe_path" in res.data
 
 
-def test_generate_print_recipe_report_returns_numbered_impressions(tmp_path: Path, monkeypatch) -> None:
+def test_generate_print_recipe_report_returns_numbered_impressions(
+    tmp_path: Path, monkeypatch
+) -> None:
     _isolate(monkeypatch, tmp_path)
     from backend.mcp.tools import core
 

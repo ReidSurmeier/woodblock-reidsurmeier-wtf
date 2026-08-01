@@ -1,7 +1,12 @@
 # 0003 — MCP transport: stdio over SSH (synthesizer reconciliation)
 
-Status: accepted (2026-05-11)
+Status: superseded (2026-07-31 by ADR-0006)
 Authority: `research-v23-mcp-plan-v2.1.md` §11 + `research-v23-mcp-protocol.md` §2
+
+This ADR preserves the May 2026 day-one decision and its reasoning. It is no
+longer the current operator path. ADR-0006 moves execution into the
+Orca-managed Pugnet workspace and removes SSH registration from the maintained
+runbook.
 
 Claude Code (Opus 4.7) runs on the Linux dev box. The JAX solver + SAM cache + GPU semaphore live on the Windows GPU box under WSL2 Ubuntu. Transport choice connects them. Two specialist briefs disagreed:
 

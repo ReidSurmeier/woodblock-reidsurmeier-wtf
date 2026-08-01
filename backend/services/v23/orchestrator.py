@@ -11,6 +11,7 @@ so subsequent tool calls (``inspect_plan``, ``forward_render``,
 ``export_print_plan``, etc.) can load + read without re-running the
 pipeline.
 """
+
 from __future__ import annotations
 
 import json
@@ -100,6 +101,7 @@ def _persist_plan(plan: PartialPlan) -> Path:
 
 def _now_iso() -> str:
     from datetime import datetime
+
     return datetime.now(UTC).isoformat()
 
 
@@ -111,12 +113,15 @@ def _warmstart_palette_size(
         return _PROFILE_M_PRIOR[solve_profile]
     low, high = _M_PRIOR_RANGE
     if not low <= int(m_prior) <= high:
-        raise OrchestratorError(WoodblockError(
-            tier="refusal", code="INVALID_M_PRIOR",
-            message=f"m_prior must be between {low} and {high}, got {m_prior!r}",
-            hint=f"use an integer in [{low}, {high}]",
-            recoverable=True,
-        ))
+        raise OrchestratorError(
+            WoodblockError(
+                tier="refusal",
+                code="INVALID_M_PRIOR",
+                message=f"m_prior must be between {low} and {high}, got {m_prior!r}",
+                hint=f"use an integer in [{low}, {high}]",
+                recoverable=True,
+            )
+        )
     return int(m_prior)
 
 
@@ -129,12 +134,17 @@ def run_pipeline_partial(
 ) -> PartialPlan:
     """Run S1→S2→S3 + template suggestion. Persist + return PartialPlan."""
     if solve_profile not in _VALID_SOLVE_PROFILES:
-        raise OrchestratorError(WoodblockError(
-            tier="refusal", code="INVALID_SOLVE_PROFILE",
-            message=f"solve_profile must be one of {_VALID_SOLVE_PROFILES}, got {solve_profile!r}",
-            hint=f"use one of: {', '.join(_VALID_SOLVE_PROFILES)}",
-            recoverable=True,
-        ))
+        raise OrchestratorError(
+            WoodblockError(
+                tier="refusal",
+                code="INVALID_SOLVE_PROFILE",
+                message=(
+                    f"solve_profile must be one of {_VALID_SOLVE_PROFILES}, got {solve_profile!r}"
+                ),
+                hint=f"use one of: {', '.join(_VALID_SOLVE_PROFILES)}",
+                recoverable=True,
+            )
+        )
     target_palette_size = _warmstart_palette_size(solve_profile, m_prior)
 
     # S1 — ingest
@@ -152,8 +162,13 @@ def run_pipeline_partial(
             canonical_path.write_bytes(handle.canonical_bytes)
             s2 = s2_sam.run_s2_sam(canonical_path, image_sha256=handle.image_sha256)
             sam_regions = [
-                {"region_id": r.region_id, "bbox": list(r.bbox), "area_px": r.area_px,
-                 "mask_path": str(r.mask_path), "mean_oklab": list(r.mean_oklab)}
+                {
+                    "region_id": r.region_id,
+                    "bbox": list(r.bbox),
+                    "area_px": r.area_px,
+                    "mask_path": str(r.mask_path),
+                    "mean_oklab": list(r.mean_oklab),
+                }
                 for r in s2.regions
             ]
         except s2_sam.SamGatewayError:
@@ -301,11 +316,14 @@ def load_plan(plan_id: str) -> PartialPlan:
     """Load a persisted PartialPlan by plan_id from the active session."""
     sid = _sess.current_session()
     if sid is None:
-        raise OrchestratorError(WoodblockError(
-            tier="refusal", code="NO_ACTIVE_SESSION",
-            message="no active session — call set_session() or ingest first",
-            recoverable=True,
-        ))
+        raise OrchestratorError(
+            WoodblockError(
+                tier="refusal",
+                code="NO_ACTIVE_SESSION",
+                message="no active session — call set_session() or ingest first",
+                recoverable=True,
+            )
+        )
     plan_file = _plan_dir(sid, plan_id) / "plan.json"
     if not plan_file.is_file():
         # Try other sessions (plan_id is globally unique within ULID prefix)
@@ -316,12 +334,15 @@ def load_plan(plan_id: str) -> PartialPlan:
                 plan_file = candidate
                 break
         else:
-            raise OrchestratorError(WoodblockError(
-                tier="refusal", code="PLAN_NOT_FOUND",
-                message=f"plan {plan_id!r} not found in any session",
-                hint="check current_session() + list_sessions() to find the right session",
-                recoverable=True,
-            ))
+            raise OrchestratorError(
+                WoodblockError(
+                    tier="refusal",
+                    code="PLAN_NOT_FOUND",
+                    message=f"plan {plan_id!r} not found in any session",
+                    hint="check current_session() + list_sessions() to find the right session",
+                    recoverable=True,
+                )
+            )
     payload = json.loads(plan_file.read_text())
     return PartialPlan(**payload)
 

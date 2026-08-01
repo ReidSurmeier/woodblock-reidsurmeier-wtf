@@ -9,12 +9,12 @@ S3 turns an ingested image array into a per-pixel hue-family label map
 
 7 families: cream / cool / flesh / warm / shadow / detail / accent.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 
 def _isolate(monkeypatch, tmp_path: Path) -> None:
@@ -22,6 +22,7 @@ def _isolate(monkeypatch, tmp_path: Path) -> None:
     import importlib
 
     from backend.mcp import paths
+
     importlib.reload(paths)
 
 
@@ -106,9 +107,7 @@ def test_run_s3_persists_family_map_under_session(tmp_path: Path, monkeypatch) -
     arr = np.full((16, 16, 3), [180, 80, 90], dtype=np.uint8)
     result = run_s3_hue_family(arr, image_sha256="a" * 64)
 
-    expected_path = (
-        s.dir / "hue_family_maps" / f"{'a' * 64}.png"
-    )
+    expected_path = s.dir / "hue_family_maps" / f"{'a' * 64}.png"
     assert expected_path.is_file()
     assert result.label_map_path == expected_path
 

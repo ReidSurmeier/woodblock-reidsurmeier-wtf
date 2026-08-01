@@ -9,12 +9,14 @@ explicitly.
 All writes are atomic via ``tempfile + os.replace`` and guarded by
 ``filelock.FileLock`` so concurrent claude-p ticks don't corrupt state.
 """
+
 from __future__ import annotations
 
 import json
 import os
 import tempfile
 from dataclasses import dataclass
+from datetime import UTC
 from pathlib import Path
 from typing import Final
 
@@ -37,17 +39,15 @@ class Session:
 
 
 def _now_iso() -> str:
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _atomic_write_json(target: Path, payload: dict) -> None:
     """Write JSON to ``target`` atomically via tempfile + rename."""
     target.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(
-        prefix=target.name + ".", suffix=".tmp", dir=str(target.parent)
-    )
+    fd, tmp = tempfile.mkstemp(prefix=target.name + ".", suffix=".tmp", dir=str(target.parent))
     try:
         with os.fdopen(fd, "w") as fh:
             json.dump(payload, fh, indent=2, sort_keys=True)
@@ -108,9 +108,7 @@ def set_current_session(session_id: str) -> None:
         raise ValueError(f"unknown session_id: {session_id}")
     pointer = _pointer_path()
     pointer.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(
-        prefix=pointer.name + ".", suffix=".tmp", dir=str(pointer.parent)
-    )
+    fd, tmp = tempfile.mkstemp(prefix=pointer.name + ".", suffix=".tmp", dir=str(pointer.parent))
     try:
         with os.fdopen(fd, "w") as fh:
             fh.write(session_id)

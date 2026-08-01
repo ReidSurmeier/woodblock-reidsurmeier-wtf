@@ -10,6 +10,7 @@ Selection rules:
 - t2_empirical when empirical LUT available
 - t1_mixbox otherwise (day-1 default)
 """
+
 from __future__ import annotations
 
 import pytest
@@ -95,7 +96,6 @@ def test_invalid_tier_raises() -> None:
 def test_render_tier_is_literal_typed() -> None:
     """The returned tier must be one of the three locked names."""
     from backend.services.v23.core.render_tier import (
-        RenderTier,
         RenderTierContext,
         choose_render_tier,
     )

@@ -4,10 +4,10 @@ S1 owns: load PNG/JPG bytes → strip EXIF (no user metadata leaks) →
 sha256 the cleaned bytes → register the handle in the active session.
 Returns an ImageHandle that downstream stages key off.
 """
+
 from __future__ import annotations
 
 import io
-import os
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +20,7 @@ def _isolate(monkeypatch, tmp_path: Path) -> None:
     import importlib
 
     from backend.mcp import paths
+
     importlib.reload(paths)
 
 
@@ -68,9 +69,7 @@ def test_strips_exif_user_fields(tmp_path: Path, monkeypatch) -> None:
     rgb = np.zeros((4, 4, 3), dtype=np.uint8)
     # 0x013B Artist, 0x9286 UserComment, 0x8825 GPSInfo dir pointer
     dirty = tmp_path / "dirty.jpg"
-    dirty.write_bytes(
-        _jpeg_with_exif(rgb, {0x013B: "Reid", 0x9286: "secret note"})
-    )
+    dirty.write_bytes(_jpeg_with_exif(rgb, {0x013B: "Reid", 0x9286: "secret note"}))
 
     handle = ingest_reference_image(dirty)
     # Round-trip through PIL to confirm EXIF gone in canonical bytes

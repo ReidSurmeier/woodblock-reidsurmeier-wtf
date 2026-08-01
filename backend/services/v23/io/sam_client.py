@@ -7,6 +7,7 @@ without spinning the real httpx stack. ``SAM_ENDPOINT_URL`` honors the
 The 600s read timeout matches the v20-side SAM_TIMEOUT cap; see the memory
 note ``feedback_colorsep_large_image_timeout.md``.
 """
+
 from __future__ import annotations
 
 import os
@@ -14,9 +15,7 @@ from typing import Any
 
 import httpx
 
-SAM_ENDPOINT_URL: str = os.environ.get(
-    "WOODBLOCK_SAM_URL", "http://100.67.23.102:8001/api/sam"
-)
+SAM_ENDPOINT_URL: str = os.environ.get("WOODBLOCK_SAM_URL", "http://100.67.23.102:8001/api/sam")
 DEFAULT_TIMEOUT_S: float = 600.0
 _TIMEOUT_EXCEPTIONS: tuple[type[BaseException], ...] = (
     httpx.ReadTimeout,

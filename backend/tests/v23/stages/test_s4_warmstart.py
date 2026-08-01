@@ -6,10 +6,10 @@ palette indices into v23 Mixbox pigment indices via OKLab snap.
 Returns per-pigment alpha-init maps that S5 inverse solver consumes as
 a warm start so the L-BFGS step doesn't begin from random noise.
 """
+
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 
 def test_tan_warmstart_returns_alpha_per_pigment() -> None:
@@ -18,8 +18,8 @@ def test_tan_warmstart_returns_alpha_per_pigment() -> None:
 
     h, w = 32, 32
     img = np.zeros((h, w, 3), dtype=np.uint8)
-    img[:, : w // 2] = (240, 220, 50)     # yellow half
-    img[:, w // 2 :] = (30, 40, 160)      # blue half
+    img[:, : w // 2] = (240, 220, 50)  # yellow half
+    img[:, w // 2 :] = (30, 40, 160)  # blue half
 
     result = tan_to_pigment_warmstart(img, target_palette_size=4)
     assert result.alpha_stack.ndim == 3  # (M, H, W)

@@ -9,17 +9,23 @@ This repository is the Chuck experiment. It is intentionally separate from
 
 ## Current Status
 
-The current `main` branch contains the role-based solver experiment:
+The current `main` branch preserves the role-based solver experiment and the
+later v23 MCP tool work. It is a maintenance-stage, local, on-demand research
+tool. It is not final CNC-ready printmaking advice, and portable CPU validation
+does not prove GPU, carving, registration, Pigment, paper, or physical-print
+behavior.
 
-- saved baseline: `chuck-mcp-speckle-m10-20260512`
-- current role-based tag: `chuck-mcp-rolebased-joint-20260512`
-- current main commit: `55362a6 Chuck MCP add role-based solver parameterization`
+`PROJECT.md` is the current Resume Packet. It records live GitHub, Pugnet, and
+Droplet ownership separately from the source tree.
 
-The solver is working on GPU and produces a real overlapping pull stack. It is
-not final CNC-ready printmaking advice yet. The main remaining issue is still
-brushed-zone topology: some impressions are cleaner and broader than the older
-M10 build, but detailed contour reconstruction still leaks into several color
-passes.
+### Inherited review frontend
+
+The checked-in Next.js, Playwright, and Docker Compose surface descends from the
+earlier Color Separator application. It is retained as an inherited review
+frontend and source-lineage scaffold; ADR-0001 keeps the MCP server
+authoritative. It is not an active deployment, does not own the public Color
+Separator route, and must not be used as evidence that this repository is
+serving users.
 
 ## What It Does
 
@@ -211,7 +217,7 @@ call_mcp_tool("export_svg", {"plan_id": plan_id})
 call_mcp_tool("export_block_svgs", {"plan_id": plan_id})
 ```
 
-## Run As MCP Server
+## Run On The Orca-managed Pugnet Host
 
 Console entry point:
 
@@ -219,19 +225,15 @@ Console entry point:
 .venv-v23/bin/woodblock-mcp
 ```
 
-Claude Code registration example:
+Pugnet is the primary development and GPU execution host. Open the registered
+repository or a task worktree through Orca, then run the entry point in its
+Orca-managed terminal. Orca owns the remote connection and session lifecycle;
+do not add a separate SSH-backed MCP registration.
 
-```bash
-claude mcp add woodblock_stack --scope user -- \
-  ssh reidsurmeier2@100.67.23.102 \
-  "wsl -d Ubuntu -- /home/reidsurmeier/src/woodblock-reidsurmeier-wtf/.venv-v23/bin/woodblock-mcp"
-```
-
-Then verify:
-
-```bash
-claude mcp list | grep woodblock_stack
-```
+This is an on-demand local MCP process, not a persistent deployment. The
+inherited frontend containers do not expose it, and no Woodblock tailnet route
+currently exists. See ADR-0006 for the current transport decision and ADR-0003
+for the superseded day-one SSH rationale.
 
 ## Tool Surface
 

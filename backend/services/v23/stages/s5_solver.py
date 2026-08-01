@@ -14,6 +14,7 @@ Per addendum-v3 fix 1: topology constraints (min-island, mean-island)
 do NOT live in this loss. They run post-solve in
 :mod:`backend.services.v23.core.topology_repair` (D11).
 """
+
 from __future__ import annotations
 
 import os
@@ -241,11 +242,7 @@ def _print_order(
 ) -> NDArray[np.int64]:
     """Return stable light-to-dark print order for alpha/pigment slots."""
     pigment_rgb = forward_render_jax.PIGMENT_TABLE[pigment_idx]
-    luminance = (
-        0.299 * pigment_rgb[:, 0]
-        + 0.587 * pigment_rgb[:, 1]
-        + 0.114 * pigment_rgb[:, 2]
-    )
+    luminance = 0.299 * pigment_rgb[:, 0] + 0.587 * pigment_rgb[:, 1] + 0.114 * pigment_rgb[:, 2]
     coverage = alpha_stack.mean(axis=(1, 2))
     # Primary key: high luminance first. Secondary key: broad supports first.
     return np.lexsort((-coverage, -luminance))
@@ -282,14 +279,10 @@ def _solver_loss(
             alpha[: layout.under_end],
             pigment_idx[: layout.under_end],
         )
-        under_loss = jnp.mean(
-            (_avg_pool_rgb(rgb_under, _UNDERPASS_WINDOW) - target_underpass) ** 2
-        )
+        under_loss = jnp.mean((_avg_pool_rgb(rgb_under, _UNDERPASS_WINDOW) - target_underpass) ** 2)
     if layout.mid_end > 0:
         rgb_mid = _forward_mhw(alpha[: layout.mid_end], pigment_idx[: layout.mid_end])
-        mid_loss = jnp.mean(
-            (_avg_pool_rgb(rgb_mid, _MIDPASS_WINDOW) - target_midpass) ** 2
-        )
+        mid_loss = jnp.mean((_avg_pool_rgb(rgb_mid, _MIDPASS_WINDOW) - target_midpass) ** 2)
 
     if stage == "under":
         alpha_under = alpha[: layout.under_end]
@@ -343,14 +336,16 @@ def _alphas_to_impressions(
         mean_alpha = float(a.mean())
         rgb = forward_render_jax.PIGMENT_TABLE[pid]
         luminance_okL = float(0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2])
-        impressions.append({
-            "id": f"imp_{i + 1:03d}",
-            "order_step": i + 1,
-            "pigment_id": int(pid),
-            "coverage_pct": round(coverage_pct, 3),
-            "mean_alpha": round(mean_alpha, 4),
-            "luminance_okL": round(luminance_okL, 4),
-        })
+        impressions.append(
+            {
+                "id": f"imp_{i + 1:03d}",
+                "order_step": i + 1,
+                "pigment_id": int(pid),
+                "coverage_pct": round(coverage_pct, 3),
+                "mean_alpha": round(mean_alpha, 4),
+                "luminance_okL": round(luminance_okL, 4),
+            }
+        )
     return impressions
 
 
@@ -525,9 +520,7 @@ def run_s5_solver(
         result = solver.run(params[stage])
         params[stage] = result.params
         iters_used += (
-            int(getattr(result.state, "iter_num", maxiter))
-            if hasattr(result, "state")
-            else maxiter
+            int(getattr(result.state, "iter_num", maxiter)) if hasattr(result, "state") else maxiter
         )
 
     wall_s = time.perf_counter() - t0

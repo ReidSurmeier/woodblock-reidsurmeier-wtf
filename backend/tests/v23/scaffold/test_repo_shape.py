@@ -5,6 +5,7 @@ D1.3 (mock server) + D1.4 (banned-terms lint) can layer on top.
 
 Failing this means the v23 build hasn't been scaffolded yet.
 """
+
 from __future__ import annotations
 
 from pathlib import Path

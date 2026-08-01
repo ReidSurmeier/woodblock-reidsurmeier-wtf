@@ -14,6 +14,7 @@ adjacency. The Wave A module remains available for the higher-fidelity
 v23.1 lift (it adds OKLab tiebreaking and chromatic-number minimisation
 guarantees that the greedy doesn't).
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -100,9 +101,7 @@ def pack_blocks(
     colors, chromatic = _greedy_color(m, conflict_neighbours)
 
     # Map color index → block id; assign face_a as default
-    impression_to_block: dict[str, int] = {
-        impression_ids[i]: colors[i] for i in range(m)
-    }
+    impression_to_block: dict[str, int] = {impression_ids[i]: colors[i] for i in range(m)}
     impression_to_face: dict[str, str] = {
         impression_ids[i]: f"blk_{colors[i]:02d}::face_a" for i in range(m)
     }
@@ -117,12 +116,14 @@ def pack_blocks(
         key = (block, order)
         if key not in seen:
             seen[key] = len(pull_groups)
-            pull_groups.append({
-                "block_id": f"blk_{block:02d}",
-                "order_step": order,
-                "pull_group": len(pull_groups),
-                "impression_ids": [imp_id],
-            })
+            pull_groups.append(
+                {
+                    "block_id": f"blk_{block:02d}",
+                    "order_step": order,
+                    "pull_group": len(pull_groups),
+                    "impression_ids": [imp_id],
+                }
+            )
         else:
             pull_groups[seen[key]]["impression_ids"].append(imp_id)
 
@@ -139,13 +140,13 @@ def pack_blocks(
         # Reassign all same-block impressions to the LOWEST pull_group of any
         # member so disjoint-on-same-block impressions share their pull tag.
         affected = [
-            j for j, pg in enumerate(pull_groups)
-            if pg["block_id"] == f"blk_{block_idx:02d}"
+            j for j, pg in enumerate(pull_groups) if pg["block_id"] == f"blk_{block_idx:02d}"
         ]
         if not affected:
             continue
-        canonical_pg = min(pg["pull_group"] for pg in pull_groups
-                           if pg["block_id"] == f"blk_{block_idx:02d}")
+        canonical_pg = min(
+            pg["pull_group"] for pg in pull_groups if pg["block_id"] == f"blk_{block_idx:02d}"
+        )
         merged_imp_ids: list[str] = []
         merged_order = None
         for idx in affected:
@@ -153,16 +154,15 @@ def pack_blocks(
             if merged_order is None:
                 merged_order = pull_groups[idx]["order_step"]
         # Remove old entries, append one merged
-        pull_groups = [
-            pg for pg in pull_groups
-            if pg["block_id"] != f"blk_{block_idx:02d}"
-        ]
-        pull_groups.append({
-            "block_id": f"blk_{block_idx:02d}",
-            "order_step": merged_order or 1,
-            "pull_group": canonical_pg,
-            "impression_ids": merged_imp_ids,
-        })
+        pull_groups = [pg for pg in pull_groups if pg["block_id"] != f"blk_{block_idx:02d}"]
+        pull_groups.append(
+            {
+                "block_id": f"blk_{block_idx:02d}",
+                "order_step": merged_order or 1,
+                "pull_group": canonical_pg,
+                "impression_ids": merged_imp_ids,
+            }
+        )
 
     return BlockPackingResult(
         block_count=chromatic,
